@@ -6,34 +6,37 @@ A Multilingual Vision-Language System for Intelligent Agricultural Monitoring.
 Crop-Query is a specialized deep learning pipeline designed to classify an extensive range of crop types and crop diseases (65 distinct classes). The project utilizes a ResNet50-based architecture trained progressively in three distinct phases to ensure optimal feature extraction and high classification accuracy.
 
 ## Project Structure
-- **`cropquery.ipynb`**: The primary notebook encompassing the full pipeline, inference setup, and evaluation metrics.
-- **`resnet50-phase-1-cropquery.ipynb`**: Training notebook for Phase 1 (Warm-up / Initial base training).
-- **`resnet50-phase-2-cropquery.ipynb`**: Training notebook for Phase 2 (Intermediate fine-tuning).
-- **`resnet50-phase-3-cropquery.ipynb`**: Training notebook for Phase 3 (Final optimization and stabilization).
+- **`cropquery.ipynb`**: The primary notebook encompassing the full pipeline, inference setup, and evaluation metrics. **All usage is driven from this notebook.**
 - **`class_names.json`**: Defines the 65 agricultural classes predicted by the model (e.g., Apple Scab, Corn Leaf Blight, Tomato Yellow Leaf Curl Virus, etc.).
-- **`*.pth` files**: Saved PyTorch weights corresponding to the best runs from each training phase (`phase1_best.pth`, `phase2_best.pth`, `phase3_best.pth`, `phase3_final.pth`).
+- **`phase3_final.pth`**: The final, fully-trained PyTorch model weights used for inference.
+- **Helper/Historical Files**: `resnet50-phase-1-cropquery.ipynb`, `resnet50-phase-2-cropquery.ipynb`, `resnet50-phase-3-cropquery.ipynb`, and intermediate `.pth` files. These were used to progressively train the model to its current state and are kept for reference, but are not required for regular usage.
 
 ## Setup & Dependencies
 
 1. Ensure you have Python 3.8+ installed.
-2. Install the necessary machine learning libraries (PyTorch, Torchvision, etc.):
+2. Install the necessary machine learning libraries:
    ```bash
    pip install torch torchvision numpy pandas matplotlib jupyter
    ```
 
 ## Usage Step-by-Step
 
-### Step 1: Model Training (Optional, if starting from scratch)
-The training requires executing three consecutive phases. Each phase builds upon the weights of the previous one.
-1. **Phase 1**: Open and run `resnet50-phase-1-cropquery.ipynb`. This outputs `phase1_best.pth`.
-2. **Phase 2**: Open and run `resnet50-phase-2-cropquery.ipynb`. It will load Phase 1 weights and output `phase2_best.pth`.
-3. **Phase 3**: Open and run `resnet50-phase-3-cropquery.ipynb`. It will load Phase 2 weights and output `phase3_best.pth` and `phase3_final.pth`.
+Since the model is already trained, you only need the main notebook to evaluate it or run inferences.
 
-### Step 2: Evaluation and Inference
-To run inferences on images or evaluate the trained model:
-1. Open the main **`cropquery.ipynb`** notebook.
-2. Ensure the `class_names.json` and the final model weights (`phase3_final.pth` or `phase3_best.pth`) are in the root directory.
-3. Run the inference cells to load the model architecture, apply the saved weights, and perform classification tasks on your agricultural imagery.
+1. **Open the Project Notebook**
+   Open **`cropquery.ipynb`** in your Jupyter environment or VS Code.
+
+2. **Import Libraries and Config**
+   Run the first few cells to import required libraries (`torch`, `torchvision`, etc.) and load mapping labels from `class_names.json`.
+
+3. **Initialize the Model**
+   Run the cells that define the ResNet50 architecture and load the saved optimal weights from `phase3_final.pth`.
+
+4. **Run Inference & Evaluation**
+   Execute the remaining inference cells in the notebook. This will:
+   - Process your input agricultural imagery.
+   - Run predictions using the loaded model.
+   - Output the identified crop type and/or disease status directly in the notebook with visualizations.
 
 ## Supported Crops
 The system detects health issues and states across a wide variety of flora, including but not limited to:
