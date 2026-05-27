@@ -27,7 +27,8 @@ Submodules
 - cropquery.pipeline       — full orchestrator
 """
 
-from .pipeline       import CropQueryPipeline, CropQueryResult
+from .pipeline        import CropQueryPipeline, CropQueryResult
+from .context_fetcher import ContextFetcher
 from .vision         import CropVisionModel
 from .retriever      import CropRetriever
 from .translator     import IndicTranslator

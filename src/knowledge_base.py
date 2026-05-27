@@ -1,18 +1,8 @@
 """
 CropQuery — Knowledge Base Builder
-Ingests three data sources into ChromaDB with per-chunk metadata.
-
-Run once to build the vector store; subsequent runs skip if collection
-already has documents (use force_rebuild=True to overwrite).
-
-Sources
--------
-1. WheatRustVQA (Kaggle)             — image-text Q&A pairs (text only)
-2. Kisan Call Centre (HuggingFace)   — real farmer–expert transcripts
-3. AgroBench                         — encyclopaedic disease knowledge (built-in)
 
 Usage (Kaggle notebook cell)
------------------------------
+
     from cropquery.knowledge_base import KnowledgeBaseBuilder
     builder = KnowledgeBaseBuilder()
     builder.build()
@@ -32,7 +22,7 @@ from .config import (
 )
 
 
-# ── AgroBench knowledge (curated subset, always available) ───────────────────
+#  AgroBench knowledge (curated subset, always available) ─
 # 30 high-value disease entries covering the 64 model classes.
 # Expand this list with the full AgroBench dataset when available.
 AGROBENCH_ENTRIES: List[Dict[str, str]] = [
@@ -383,13 +373,143 @@ AGROBENCH_ENTRIES: List[Dict[str, str]] = [
             "wash hands after handling tobacco (ToMV source); do not transplant symptomatic seedlings."
         ),
     },
+    {
+        "crop": "Cashew", "condition": "Leaf Miner",
+        "text": (
+            "Cashew Leaf Miner (Acrocercops syngramma). "
+            "Symptoms: Irregular whitish or brownish mines (tunnels) on leaves made by larvae "
+            "feeding inside the leaf tissue; affected leaves curl, dry, and drop prematurely; "
+            "severe infestations cause significant defoliation and reduced yield. "
+            "Severity: Moderate — worst during flushing season when new leaves emerge. "
+            "Chemical control: Spray Dimethoate 30 EC (2 mL/L) or Quinalphos 25 EC (2 mL/L) "
+            "targeting young flush; 2–3 sprays at 15-day intervals. "
+            "Organic control: Neem oil (5 mL/L) spray on new flush deters egg-laying. "
+            "Prevention: Monitor new flush emergence; avoid excess nitrogen which promotes "
+            "dense soft growth attractive to leaf miners; collect and burn fallen mined leaves."
+        ),
+    },
+    # ── G1: Expanded crop coverage (Mentor remark 2) ──────────────────────
+    {
+        "crop": "Banana", "condition": "Panama Disease",
+        "text": (
+            "Banana Panama Disease / Fusarium Wilt (Fusarium oxysporum f.sp. cubense). "
+            "Symptoms: Yellowing of lower leaves progressing upward; brown discoloration "
+            "in pseudostem when cut; wilting and plant death. No cure once infected. "
+            "Management: Use certified disease-free tissue culture plants (Cavendish is resistant to Race 1). "
+            "Soil treatment: Trichoderma viride + FYM drench around root zone before planting. "
+            "Do NOT plant banana in infected soil for at least 3 years. "
+            "Destroy infected plants: remove and burn — do NOT compost."
+        ),
+    },
+    {
+        "crop": "Banana", "condition": "Sigatoka",
+        "text": (
+            "Banana Black Sigatoka (Mycosphaerella fijiensis). "
+            "Symptoms: Pale yellow streaks on lower leaf surface expanding to dark brown-black necrotic patches; "
+            "severe defoliation reduces bunch weight significantly. "
+            "Chemical control: Propiconazole 25 EC (1 mL/L) or Mancozeb 75 WP (2.5 g/L); "
+            "spray every 21 days during humid months. Alternate fungicide groups to prevent resistance. "
+            "Cultural: Remove severely infected leaves; improve drainage; maintain wide spacing."
+        ),
+    },
+    {
+        "crop": "Mango", "condition": "Anthracnose",
+        "text": (
+            "Mango Anthracnose (Colletotrichum gloeosporioides). "
+            "Symptoms: Dark, sunken lesions on leaves, flowers, and fruit; blossom blight causes "
+            "flower drop reducing fruit set; fruit lesions expand post-harvest. "
+            "Critical spray window: Pre-flowering to fruit set. "
+            "Chemical control: Carbendazim 50 WP (1 g/L) or Copper oxychloride (3 g/L); "
+            "3-4 sprays at 15-day intervals from panicle emergence. "
+            "Post-harvest: Hot water treatment at 52 degrees C for 5 minutes reduces post-harvest infection."
+        ),
+    },
+    {
+        "crop": "Mango", "condition": "Powdery Mildew",
+        "text": (
+            "Mango Powdery Mildew (Oidium mangiferae). "
+            "Symptoms: White powdery coating on inflorescence, young leaves, and fruit; "
+            "flower drop and fruit abortion; severe in cool, dry weather. "
+            "Chemical control: Wettable Sulphur 80 WP (3 g/L) or Hexaconazole 5 EC (1 mL/L); "
+            "2-3 sprays starting at bud burst stage. "
+            "Avoid sulphur when temperature exceeds 35 degrees C — causes phytotoxicity."
+        ),
+    },
+    {
+        "crop": "Groundnut", "condition": "Early Leaf Spot",
+        "text": (
+            "Groundnut Early Leaf Spot (Cercospora arachidicola). "
+            "Symptoms: Circular brown spots with yellow halo on upper leaf surface; "
+            "defoliation under severe infection; yield loss 10-50%. "
+            "Chemical control: Chlorothalonil 75 WP (2 g/L) or Mancozeb at 10-day intervals "
+            "from 30 days after sowing. "
+            "Resistant varieties: ICGV 86031, JL 24. "
+            "Agronomy: Avoid dense planting; crop rotation with cereals."
+        ),
+    },
+    {
+        "crop": "Citrus", "condition": "Canker",
+        "text": (
+            "Citrus Canker (Xanthomonas citri). "
+            "Symptoms: Raised, corky lesions with water-soaked margin and yellow halo on leaves, "
+            "fruit, and stems; premature fruit drop; significant yield and quality loss. "
+            "Chemical control: Copper oxychloride (3 g/L) preventive sprays; "
+            "4 sprays from new flush emergence. "
+            "Sanitation: Prune infected branches and burn; disinfect tools with 10% bleach. "
+            "Note: No curative spray available — management is strictly preventive."
+        ),
+    },
+    {
+        "crop": "Pearl Millet", "condition": "Downy Mildew",
+        "text": (
+            "Pearl Millet Downy Mildew / Green Ear Disease (Sclerospora graminicola). "
+            "Symptoms: Chlorotic streaks on leaves; white downy growth on leaf undersides; "
+            "infected panicles transform into leafy structures called green ear; stunted plants. "
+            "Seed treatment: Metalaxyl (Apron 35 SD) at 6 g/kg seed — most effective control. "
+            "Foliar: Metalaxyl + Mancozeb spray at 3-leaf and 6-leaf stage. "
+            "Use resistant hybrids from ICAR-ICRISAT such as HHB 67 Improved."
+        ),
+    },
+    {
+        "crop": "Barley", "condition": "Powdery Mildew",
+        "text": (
+            "Barley Powdery Mildew (Blumeria graminis f.sp. hordei). "
+            "Symptoms: White cottony patches on upper leaf surface and stems; severe on flag leaf "
+            "and ear reduces grain filling. Favoured by cool, humid conditions. "
+            "Chemical control: Propiconazole 25 EC (1 mL/L) at first sign of infection; "
+            "Tebuconazole as alternative. "
+            "Genetic resistance is the primary management — use varieties recommended by state agriculture universities."
+        ),
+    },
 ]
+
+
+#  FIX: Robust column name detection for Kisan dataset
+# The HuggingFace dataset Franklin01/Dataset_prep01 may use different column
+# name casings or pluralisations. Probe a ranked list of candidates.
+_KISAN_QUESTION_COLS = ["question", "questions", "Question", "Questions",
+                        "query", "Query", "farmer_query", "input", "text"]
+_KISAN_ANSWER_COLS   = ["answer",   "answers",   "Answer",   "Answers",
+                        "expert_answer", "response", "Response", "output", "label"]
+
+
+def _get_col(row: dict, candidates: list) -> str:
+    """Return the first non-empty value matching any candidate key."""
+    for key in candidates:
+        val = row.get(key)
+        if val and str(val).strip():
+            return str(val).strip()
+    return ""
 
 
 def _parse_kisan_dataset() -> List[Dict[str, Any]]:
     """
     Download and parse the Kisan Call Centre dataset from HuggingFace.
     Returns list of chunk dicts ready for ChromaDB.
+
+    BUG FIX: original code used hardcoded "questions"/"answers" which don't
+    match the actual dataset columns → zero chunks ingested → Kisan data
+    never appears in RAG results.
     """
     try:
         from datasets import load_dataset
@@ -399,39 +519,44 @@ def _parse_kisan_dataset() -> List[Dict[str, Any]]:
 
     print("[KB] Loading Kisan Call Centre dataset from HuggingFace...")
     try:
-        ds = load_dataset(HF_KISAN_DATASET, split="train", trust_remote_code=True)
+        ds = load_dataset(HF_KISAN_DATASET, split="train")
     except Exception as e:
         print(f"[KB] Could not load Kisan dataset: {e}")
         return []
 
+    # Auto-detect column names from the first row
+    if len(ds) == 0:
+        print("[KB] Kisan dataset is empty")
+        return []
+
+    first_row = ds[0]
+    print(f"[KB] Kisan dataset columns: {list(first_row.keys())}")
+
     chunks = []
+    skipped = 0
     for i, row in enumerate(ds):
-        # Dataset has varying column names — probe for common ones
-        question = (
-            row.get("question") or row.get("query") or
-            row.get("Question") or row.get("input") or ""
-        )
-        answer = (
-            row.get("answer") or row.get("response") or
-            row.get("Answer") or row.get("output") or ""
-        )
-        crop = row.get("crop") or row.get("Crop") or "Unknown"
+        question = _get_col(row, _KISAN_QUESTION_COLS)
+        answer   = _get_col(row, _KISAN_ANSWER_COLS)
 
         if not question or not answer:
+            skipped += 1
             continue
 
         text = f"Farmer Query: {question}\nExpert Answer: {answer}"
         chunks.append({
             "id":       f"kisan_{i}",
-            "text":     text[:1500],   # cap at 1500 chars
+            "text":     text[:1500],
             "metadata": {
                 "source":     "kisan_call_centre",
-                "crop":       str(crop),
+                "crop":       "general",
                 "condition":  "general",
                 "chunk_type": "qa_pair",
                 "language":   "en",
             },
         })
+
+    if skipped > 0:
+        print(f"[KB] Kisan: skipped {skipped} rows with missing question/answer")
     print(f"[KB] Kisan Call Centre: {len(chunks)} Q&A pairs loaded")
     return chunks
 
@@ -441,7 +566,6 @@ def _parse_wheat_rust_vqa(vqa_dir: Optional[str] = None) -> List[Dict[str, Any]]
     Parse WheatRustVQA text Q&A pairs.
     vqa_dir: path to downloaded dataset. If None, attempts Kaggle input path.
     """
-    # Try common Kaggle paths
     search_dirs = [
         vqa_dir,
         "/kaggle/input/wheat-rust-vqa",
@@ -510,13 +634,6 @@ def _build_agrobench_chunks() -> List[Dict[str, Any]]:
 class KnowledgeBaseBuilder:
     """
     Builds and manages the ChromaDB vector store for CropQuery.
-
-    Parameters
-    ----------
-    chroma_dir : str
-        Directory to persist the ChromaDB collection.
-    embed_model : str
-        SentenceTransformer model ID.
     """
 
     def __init__(
@@ -539,22 +656,6 @@ class KnowledgeBaseBuilder:
         vqa_dir: Optional[str] = None,
         batch_size: int = 64,
     ) -> int:
-        """
-        Build the knowledge base from all three sources.
-
-        Parameters
-        ----------
-        force_rebuild : bool
-            If True, delete the collection and rebuild from scratch.
-        vqa_dir : str, optional
-            Path to WheatRustVQA dataset directory.
-        batch_size : int
-            Upsert batch size for ChromaDB.
-
-        Returns
-        -------
-        Total number of documents in collection after build.
-        """
         if force_rebuild:
             print("[KB] Rebuilding from scratch...")
             self.client.delete_collection(COLLECTION_NAME)
@@ -568,7 +669,6 @@ class KnowledgeBaseBuilder:
                   f"Pass force_rebuild=True to overwrite.")
             return self.collection.count()
 
-        # Gather all chunks
         all_chunks: List[Dict[str, Any]] = []
         all_chunks.extend(_build_agrobench_chunks())
         all_chunks.extend(_parse_kisan_dataset())
@@ -578,7 +678,6 @@ class KnowledgeBaseBuilder:
             print("[KB] No chunks to ingest!")
             return 0
 
-        # Deduplicate IDs
         seen_ids = set()
         unique_chunks = []
         for c in all_chunks:
@@ -586,7 +685,6 @@ class KnowledgeBaseBuilder:
                 seen_ids.add(c["id"])
                 unique_chunks.append(c)
 
-        # Upsert in batches
         total = len(unique_chunks)
         print(f"[KB] Upserting {total} chunks into ChromaDB...")
         for start in range(0, total, batch_size):
@@ -603,7 +701,6 @@ class KnowledgeBaseBuilder:
         """Return collection statistics."""
         count = self.collection.count()
         sources: Dict[str, int] = {}
-        # Sample up to 1000 to compute source breakdown
         sample = self.collection.get(limit=min(count, 1000), include=["metadatas"])
         for meta in sample["metadatas"]:
             src = meta.get("source", "unknown")

@@ -1,16 +1,9 @@
 """
 CropQuery — Gradio Demo
 Run: python app.py (or execute in Kaggle notebook with `demo.launch(share=True)`)
-
-Features
---------
-- Image upload
-- Optional farmer question in native script
-- Language selector (10 Indian languages + English)
-- Disease panel: top-3 predictions with confidence bars
-- Advice panel: 4-section structured output in selected language
-- Low-confidence fallback: shows top-3 options, asks farmer to confirm
 """
+import sys
+sys.path.insert(0, "/kaggle/working")
 
 import os
 import json
@@ -19,79 +12,128 @@ from PIL import Image
 from typing import Optional
 
 from cropquery import CropQueryPipeline
-from cropquery.config import MODEL_PATH, CLASS_NAMES_PATH, CONFIDENCE_GATE
+from cropquery.config import CLASS_NAMES_PATH, CONFIDENCE_GATE
 from cropquery.translator import IndicTranslator
 from cropquery.vision import CropVisionModel
 
-# ── Load pipeline once at startup ────────────────────────────────────────────
+# Load pipeline once at startup
 print("Loading CropQuery pipeline...")
+
 pipeline = CropQueryPipeline(
-    model_path        = MODEL_PATH,
-    class_names_path  = CLASS_NAMES_PATH,
-    skip_llava        = False,
+    skip_llava = False,
 )
 LANGUAGES = IndicTranslator.available_languages()
 
-
-# ── Core inference function ───────────────────────────────────────────────────
+# Core inference function ─
 def run_cropquery(
     image: Optional[Image.Image],
     farmer_question: str,
     target_language: str,
-    confirmed_class: Optional[str],    # set by user from low-conf dropdown
-) -> tuple:
-    """
-    Returns: (disease_html, advice_text, low_conf_panel_visible, dropdown_choices)
-    """
+    confirmed_class: Optional[str],
+):
     if image is None:
-        return (
+        yield (
             "<p style='color:#888'>Upload an image to start.</p>",
-            "",
-            gr.update(visible=False),
+            "", gr.update(visible=False),
             gr.update(choices=[], value=None),
+            "", gr.update(visible=False),
         )
+        return
 
-    result = pipeline.run(
-        image           = image,
-        farmer_question = farmer_question or "What should I do?",
-        target_language = target_language,
-    )
+    # ── Step 1: Vision — show immediately ──────────────────────────────
+    preds = pipeline.vision.predict(image)
 
-    # ── Disease panel HTML ────────────────────────────────────────────────────
-    def _confidence_bar(conf: float) -> str:
+    def pred_label(cls):
+        crop, cond = cls.split("__", 1) if "__" in cls else ("Unknown", cls)
+        return f"{crop.replace('_', ' ')} — {cond.replace('_', ' ')}"
+
+    def _confidence_bar(cls, conf):
         colour = "#2e7d32" if conf >= CONFIDENCE_GATE else "#f57c00" if conf >= 50 else "#c62828"
         return (
             f"<div style='margin-bottom:10px'>"
-            f"  <div style='font-weight:600;margin-bottom:3px'>"
-            f"    {pred_label(cls)} <span style='color:#888;font-size:13px'>({conf:.1f}%)</span>"
-            f"  </div>"
-            f"  <div style='background:#e0e0e0;border-radius:4px;height:8px;width:100%'>"
-            f"    <div style='background:{colour};border-radius:4px;height:8px;width:{min(conf,100):.0f}%'></div>"
-            f"  </div>"
-            f"</div>"
+            f"<div style='font-weight:600;margin-bottom:3px'>{pred_label(cls)} "
+            f"<span style='color:#888;font-size:13px'>({conf:.1f}%)</span></div>"
+            f"<div style='background:#e0e0e0;border-radius:4px;height:8px;width:100%'>"
+            f"<div style='background:{colour};border-radius:4px;height:8px;width:{min(conf,100):.0f}%'></div>"
+            f"</div></div>"
         )
 
-    def pred_label(cls: str) -> str:
-        crop, cond = CropVisionModel.parse_label(cls)
-        return f"{crop} — {cond}"
-
-    bars_html = "".join(_confidence_bar(cls, conf) for cls, conf in result.predictions)
+    bars_html = "".join(_confidence_bar(cls, conf) for cls, conf in preds)
+    is_high = preds and preds[0][1] >= CONFIDENCE_GATE
     badge = (
         "<span style='background:#2e7d32;color:white;padding:2px 8px;border-radius:4px;font-size:12px'>HIGH CONFIDENCE</span>"
-        if result.is_high_confidence else
+        if is_high else
         "<span style='background:#f57c00;color:white;padding:2px 8px;border-radius:4px;font-size:12px'>LOW CONFIDENCE</span>"
     )
     disease_html = f"<div>{badge}</div><br>{bars_html}"
+    dropdown_choices = [f"{cls} ({conf:.0f}%)" for cls, conf in preds]
 
-    # ── Low-confidence fallback panel ─────────────────────────────────────────
-    show_confirm = not result.is_high_confidence
-    dropdown_choices = [f"{cls} ({conf:.0f}%)" for cls, conf in result.predictions]
-
-    return (
+    yield (
         disease_html,
-        result.advice,
-        gr.update(visible=show_confirm),
+        "⏳ Generating advice...",
+        gr.update(visible=not is_high),
         gr.update(choices=dropdown_choices, value=dropdown_choices[0] if dropdown_choices else None),
+        "", gr.update(visible=False),
+    )
+
+    # ── Step 2: Context + RAG (fast) ───────────────────────────────────
+    try:
+        weather_ctx  = pipeline.context_fetcher.get_weather()
+        location_ctx = pipeline.context_fetcher.get_location()
+    except Exception:
+        weather_ctx = location_ctx = None
+
+    if confirmed_class:
+        # strip the "(83%)" suffix if present
+        top_class = confirmed_class.split(" (")[0]
+        resnet_hint = top_class
+    else:
+        top_class   = preds[0][0] if preds else None
+        resnet_hint = pipeline.vision.gate(preds, pipeline.vision._last_tensor)
+
+    chunks      = pipeline.retriever.retrieve(top_class, farmer_question or "What should I do?")
+    rag_context = pipeline.retriever.build_rag_context(chunks)
+
+    # ── Step 3: Stream LLaVA tokens ────────────────────────────────────
+    streamer = pipeline.advisor.generate_streaming(
+        image=image, rag_context=rag_context,
+        farmer_question=farmer_question or "What should I do?",
+        resnet_hint=resnet_hint, confidence=preds[0][1] if preds else None,
+        weather_ctx=weather_ctx, location_ctx=location_ctx,
+    )
+    advice = ""
+    for token in streamer:
+        advice += token
+        yield (
+            disease_html, advice,
+            gr.update(visible=not is_high),
+            gr.update(choices=dropdown_choices, value=dropdown_choices[0] if dropdown_choices else None),
+            "", gr.update(visible=False),
+        )
+
+    # ── Step 4: Translate + irrigation (after streaming) ───────────────
+    if target_language != "English":
+        advice = pipeline.translator.translate(advice, target_language)
+
+    irrigation_text = ""
+    try:
+        irrigation_text = pipeline.context_fetcher.get_irrigation_advice(
+            crop=top_class.split("__")[0].replace("_", " ") if top_class else None,
+            weather_ctx=weather_ctx,
+        )
+        # translate irrigation too
+        if target_language != "English" and irrigation_text:
+            irrigation_text = pipeline.translator.translate(
+                irrigation_text, target_language
+            )
+    except Exception:
+        pass
+
+    yield (
+        disease_html, advice,
+        gr.update(visible=not is_high),
+        gr.update(choices=dropdown_choices, value=dropdown_choices[0] if dropdown_choices else None),
+        irrigation_text, gr.update(visible=bool(irrigation_text)),
     )
 
 
@@ -101,20 +143,20 @@ def rerun_with_confirmed(
     target_language: str,
     confirmed_choice: str,
 ) -> str:
-    """Re-run advice generation with a user-confirmed class."""
     if image is None or not confirmed_choice:
         return ""
 
-    # Extract class name from "Crop__Condition (XX%)"
     confirmed_class = confirmed_choice.split(" (")[0]
+    retriever  = pipeline.retriever
+    advisor    = pipeline.advisor
+    translator = pipeline.translator
 
-    from cropquery.retriever import CropRetriever
-    from cropquery.advisor   import LLaVAAdvisor
-    from cropquery.translator import IndicTranslator
-
-    retriever   = pipeline.retriever
-    advisor     = pipeline.advisor
-    translator  = pipeline.translator
+    # fetch context — same as run_cropquery
+    try:
+        weather_ctx  = pipeline.context_fetcher.get_weather()
+        location_ctx = pipeline.context_fetcher.get_location()
+    except Exception:
+        weather_ctx = location_ctx = None
 
     rag_chunks  = retriever.retrieve(confirmed_class, farmer_question)
     rag_context = retriever.build_rag_context(rag_chunks)
@@ -125,7 +167,9 @@ def rerun_with_confirmed(
             rag_context     = rag_context,
             farmer_question = farmer_question,
             resnet_hint     = confirmed_class,
-            confidence      = 100.0,   # user confirmed — treat as certain
+            confidence      = 100.0,
+            weather_ctx     = weather_ctx,
+            location_ctx    = location_ctx,
         )
     else:
         advice = f"[RAG-only]\n\n{rag_context}"
@@ -136,7 +180,7 @@ def rerun_with_confirmed(
     return advice
 
 
-# ── Gradio UI ─────────────────────────────────────────────────────────────────
+# Gradio UI ─
 CSS = """
 #title { text-align: center; }
 #disease-panel { border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; }
@@ -154,7 +198,6 @@ with gr.Blocks(css=CSS, title="CropQuery") as demo:
     """)
 
     with gr.Row():
-        # ── Left column: inputs ───────────────────────────────────────────────
         with gr.Column(scale=1):
             image_input = gr.Image(
                 type="pil", label="📷 Upload leaf / crop image", height=300
@@ -171,7 +214,6 @@ with gr.Blocks(css=CSS, title="CropQuery") as demo:
             )
             run_btn = gr.Button("🔍 Analyse", variant="primary", size="lg")
 
-        # ── Right column: outputs ─────────────────────────────────────────────
         with gr.Column(scale=2):
             disease_panel = gr.HTML(
                 value="<p style='color:#888'>Upload an image to start.</p>",
@@ -179,7 +221,6 @@ with gr.Blocks(css=CSS, title="CropQuery") as demo:
                 elem_id="disease-panel",
             )
 
-            # Low-confidence confirmation panel (hidden by default)
             with gr.Group(visible=False, elem_id="low-conf-box") as low_conf_panel:
                 gr.Markdown(
                     "⚠️ **Low confidence** — please confirm which disease this looks like:"
@@ -195,12 +236,18 @@ with gr.Blocks(css=CSS, title="CropQuery") as demo:
                 elem_id="advice-panel",
                 show_copy_button=True,
             )
+            with gr.Group(visible=False) as irrigation_group:
+                irrigation_output = gr.Textbox(
+                    label="💧 Irrigation Advisory",
+                    lines=3,
+                    elem_id="irrigation-panel",
+                    show_copy_button=False,
+                )
 
-    # ── Event wiring ──────────────────────────────────────────────────────────
     run_btn.click(
         fn=run_cropquery,
         inputs=[image_input, question_input, language_dropdown, confirm_dropdown],
-        outputs=[disease_panel, advice_output, low_conf_panel, confirm_dropdown],
+        outputs=[disease_panel, advice_output, low_conf_panel, confirm_dropdown, irrigation_output, irrigation_group],
     )
 
     confirm_btn.click(
@@ -209,7 +256,6 @@ with gr.Blocks(css=CSS, title="CropQuery") as demo:
         outputs=[advice_output],
     )
 
-    # Example images
     gr.Examples(
         examples=[
             ["examples/tomato_late_blight.jpg", "What spray should I use?", "Hindi"],
@@ -222,14 +268,14 @@ with gr.Blocks(css=CSS, title="CropQuery") as demo:
 
     gr.HTML("""
     <div style='text-align:center;color:#888;margin-top:16px;font-size:12px'>
-        ResNet50 (85.42%) · LLaVA-1.5-7B · ChromaDB RAG · IndicTrans2 · PRISM AI
+        Ensemble Vision · LLaVA-1.5-7B · ChromaDB RAG · IndicTrans2 
     </div>
     """)
 
-
 if __name__ == "__main__":
+    demo.queue()
     demo.launch(
-        share        = True,    # generates public URL (required in Kaggle)
+        share        = True,
         server_port  = 7860,
         show_error   = True,
     )

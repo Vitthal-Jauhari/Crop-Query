@@ -1,11 +1,5 @@
 """
 CropQuery — RAG Retriever
-Retrieves top-k relevant knowledge chunks for a given crop/condition query.
-
-Logic
------
-1. Primary:  filter by predicted crop, semantic search over farmer question
-2. Fallback: if crop returns < MIN_CROP_CHUNKS results, run unfiltered search
 """
 
 from typing import List, Dict, Any, Optional
@@ -16,19 +10,37 @@ from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunct
 from .config import (
     CHROMA_DIR, COLLECTION_NAME,
     EMBED_MODEL, TOP_CHUNKS, MIN_CROP_CHUNKS,
+    TOP_K_AGROBENCH, TOP_K_KISAN,
 )
+import re
+
+_RAG_JARGON_MAP = {
+    "new flush":        "new leaves",
+    "flush emergence":  "new leaves appearing",
+    "flush":            "new leaves",
+    "lesions":          "spots",
+    "necrosis":         "dead patches",
+    "necrotic":         "dead",
+    "inoculum":         "disease source",
+    "sporulation":      "disease spreading",
+    "oviposition":      "egg-laying",
+    "larval mining":    "pest damage inside leaves",
+    "foliar application": "leaf spray",
+    "phytotoxicity":    "plant damage from chemicals",
+    "chlorosis":        "yellowing",
+    "defoliation":      "leaf fall",
+    "stippling":        "tiny spots",
+    "instar":           "pest stage",
+}
+
+
+def _clean_rag_chunk(text: str) -> str:
+    for term, replacement in _RAG_JARGON_MAP.items():
+        text = re.sub(re.escape(term), replacement, text, flags=re.IGNORECASE)
+    return text
 
 
 class CropRetriever:
-    """
-    Wraps ChromaDB for RAG retrieval.
-
-    Usage
-    -----
-    retriever = CropRetriever()
-    chunks = retriever.retrieve("Tomato__Late_Blight", "What fungicide should I spray?")
-    prompt  = retriever.build_rag_context(chunks)
-    """
 
     def __init__(
         self,
@@ -39,7 +51,6 @@ class CropRetriever:
     ):
         self.top_k = top_k
         self.min_crop_chunks = min_crop_chunks
-
         client = chromadb.PersistentClient(path=chroma_dir)
         ef = SentenceTransformerEmbeddingFunction(model_name=embed_model)
         self.collection = client.get_collection(
@@ -48,90 +59,110 @@ class CropRetriever:
         )
         print(f"[RAG] Connected to ChromaDB. {self.collection.count()} documents in collection.")
 
-    def retrieve(
-        self,
-        predicted_class: Optional[str],
-        farmer_question: str = "What should I do?",
-    ) -> List[Dict[str, Any]]:
-        """
-        Retrieve top-k relevant chunks.
+    def retrieve(self, predicted_class, farmer_question="What should I do?"):
+        query     = self._build_query(predicted_class, farmer_question)
+        crop      = self._extract_crop(predicted_class)
+        condition = self._extract_condition(predicted_class)
 
-        Parameters
-        ----------
-        predicted_class : str, optional
-            ResNet50 prediction in 'Crop__Condition' format, e.g. 'Tomato__Late_Blight'.
-            If None, runs unfiltered retrieval.
-        farmer_question : str
-            Free-form question from the farmer.
+        crop_chunks  = []
+        kisan_chunks = []
 
-        Returns
-        -------
-        List of dicts: {text, metadata, distance}
-        """
-        query = self._build_query(predicted_class, farmer_question)
-        crop  = self._extract_crop(predicted_class)
-
-        results = None
-
-        # ── Crop-filtered retrieval ──────────────────────────────────────────
+        # 1. Crop+condition specific agrobench chunks
         if crop:
             try:
-                results = self.collection.query(
+                where_filter = {"$and": [
+                    {"source": {"$eq": "agrobench"}},
+                    {"crop":   {"$eq": crop}},
+                ]}
+                if condition:
+                    where_filter["$and"].append({"condition": {"$eq": condition}})
+
+                r = self.collection.query(
                     query_texts=[query],
-                    n_results=self.top_k,
-                    where={"crop": {"$eq": crop}},
+                    n_results=TOP_K_AGROBENCH,
+                    where=where_filter,
                     include=["documents", "metadatas", "distances"],
                 )
-                n_found = len(results["documents"][0]) if results["documents"] else 0
-                if n_found < self.min_crop_chunks:
-                    print(f"[RAG] Only {n_found} crop-specific chunks — falling back to unfiltered")
-                    results = None   # trigger fallback
-            except Exception as e:
-                print(f"[RAG] Crop-filtered query failed ({e}) — falling back to unfiltered")
-                results = None
+                crop_chunks = self._parse_results(r)
 
-        # ── Unfiltered fallback ──────────────────────────────────────────────
-        if results is None:
-            results = self.collection.query(
+                # If condition filter returned nothing, fall back to crop-only
+                if not crop_chunks and condition:
+                    r = self.collection.query(
+                        query_texts=[query],
+                        n_results=TOP_K_AGROBENCH,
+                        where={"$and": [
+                            {"source": {"$eq": "agrobench"}},
+                            {"crop":   {"$eq": crop}},
+                        ]},
+                        include=["documents", "metadatas", "distances"],
+                    )
+                    crop_chunks = self._parse_results(r)
+
+            except Exception as e:
+                print(f"[RAG] Crop query failed: {e}")
+
+        # 2. Kisan Q&A chunks
+        try:
+            r = self.collection.query(
                 query_texts=[query],
-                n_results=self.top_k,
+                n_results=TOP_K_KISAN,
+                where={"source": {"$eq": "kisan_call_centre"}},
                 include=["documents", "metadatas", "distances"],
             )
+            kisan_chunks = self._parse_results(r)
+        except Exception as e:
+            print(f"[RAG] Kisan query failed: {e}")
 
-        return self._parse_results(results)
+        # 3. Fallback — unfiltered query if no crop-specific chunks
+        if not crop_chunks:
+            try:
+                r = self.collection.query(
+                    query_texts=[query],
+                    n_results=TOP_K_AGROBENCH,
+                    include=["documents", "metadatas", "distances"],
+                )
+                crop_chunks = self._parse_results(r)
+            except Exception as e:
+                print(f"[RAG] Fallback query failed: {e}")
 
-    # ── Prompt builder ───────────────────────────────────────────────────────
+        return (crop_chunks + kisan_chunks)[:(TOP_K_AGROBENCH + TOP_K_KISAN)]
 
-    def build_rag_context(self, chunks: List[Dict[str, Any]]) -> str:
-        """
-        Format retrieved chunks into the RAG context block injected into the prompt.
-        """
+    def build_rag_context(self, chunks):
         if not chunks:
-            return "No specific knowledge retrieved for this disease. Use general agronomy principles."
+            return "No specific knowledge retrieved. Use general agronomy principles."
 
+        MAX_CHUNK_CHARS = 400
         lines = ["=== Retrieved Agricultural Knowledge ==="]
         for i, chunk in enumerate(chunks, 1):
             src  = chunk["metadata"].get("source", "unknown")
             crop = chunk["metadata"].get("crop", "")
             cond = chunk["metadata"].get("condition", "")
             label = f"[{i}] Source: {src}"
-            if crop and crop != "Unknown":
+            if crop and crop not in ("Unknown", "general"):
                 label += f" | Crop: {crop}"
             if cond and cond != "general":
                 label += f" | Disease: {cond}"
             lines.append(label)
-            lines.append(chunk["text"])
+            text = _clean_rag_chunk(chunk["text"])
+            # Truncate long chunks
+            if len(text) > MAX_CHUNK_CHARS:
+                text = text[:MAX_CHUNK_CHARS].rsplit(".", 1)[0] + "."
+            lines.append(text)
             lines.append("")
-
         return "\n".join(lines)
-
-    # ── Private helpers ──────────────────────────────────────────────────────
 
     @staticmethod
     def _extract_crop(predicted_class: Optional[str]) -> Optional[str]:
         if not predicted_class:
             return None
         return predicted_class.split("__")[0].replace("_", " ")
+
+    @staticmethod
+    def _extract_condition(predicted_class: Optional[str]) -> Optional[str]:
+        if not predicted_class or "__" not in predicted_class:
+            return None
+        condition = predicted_class.split("__", 1)[1].replace("_", " ").title()
+        return condition
 
     @staticmethod
     def _build_query(predicted_class: Optional[str], farmer_question: str) -> str:

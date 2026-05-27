@@ -1,39 +1,49 @@
-"""
-CropQuery — Central Configuration
-All paths, model IDs, thresholds, and language codes live here.
-"""
-
 import os
 
-# ── Paths ────────────────────────────────────────────────────────────────────
-BASE_DIR          = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH        = os.path.join(BASE_DIR, "model.pth")          # phaseC_best.pth
-CLASS_NAMES_PATH  = os.path.join(BASE_DIR, "class_names.json")   # list of 64 Crop__Condition labels
-CHROMA_DIR        = os.path.join(BASE_DIR, "chroma_db")          # persisted vector store
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CHROMA_DIR = "/kaggle/working/chroma_db"
 
-# ── Vision model ─────────────────────────────────────────────────────────────
-NUM_CLASSES       = 64
-DROPOUT           = 0.4
-IMG_SIZE          = 224
-CONFIDENCE_GATE   = 85.0   # ResNet hint passed to LLaVA only when conf ≥ this
-TOP_K             = 3      # top-k predictions returned by ResNet50
+# ── Device assignment ──────────────────────────────────────────────────────
+BACKBONE_DEVICE = "cuda:0"
+LLAVA_DEVICE    = "cuda:1"
 
-# ── Embedding / RAG ──────────────────────────────────────────────────────────
-EMBED_MODEL       = "sentence-transformers/all-MiniLM-L6-v2"
-COLLECTION_NAME   = "cropquery_knowledge"
-TOP_CHUNKS        = 5
-MIN_CROP_CHUNKS   = 3      # fallback to unfiltered retrieval below this
+# ── Ensemble checkpoint paths ──────────────────────────────────────────────
+RUNS_DIR          = "/kaggle/input/datasets/vitthaljauhari2/cropquerydataset"
+RESNET_CKPT       = os.path.join(RUNS_DIR, "resnet50_best.pth")
+EFFICIENTNET_CKPT = os.path.join(RUNS_DIR, "efficientnet_best.pth")
+DENSENET_CKPT     = os.path.join(RUNS_DIR, "densenet_best.pth")
 
-# ── LLaVA ────────────────────────────────────────────────────────────────────
-LLAVA_MODEL_ID    = "llava-hf/llava-1.5-7b-hf"
-LLAVA_MAX_TOKENS  = 512
-LOAD_IN_4BIT      = True   # BitsAndBytesConfig — keeps it within T4 VRAM
+# ── FAISS feature bank ─────────────────────────────────────────────────────
+BANK_PREFIX   = "/kaggle/input/datasets/vitthaljauhari2/cropquerydataset/feature_bank"
+BANK_FEATURES = f"{BANK_PREFIX}_features.npy"
+BANK_LABELS   = f"{BANK_PREFIX}_labels.npy"
 
-# ── IndicTrans2 ───────────────────────────────────────────────────────────────
-INDICTRANS_MODEL  = "ai4bharat/indictrans2-en-indic-1B"
-DEFAULT_LANGUAGE  = "hin_Deva"   # Hindi
+# ── Class map ──────────────────────────────────────────────────────────────
+CLASS_NAMES_PATH = os.path.join(BASE_DIR, "class_names.json")
+NUM_CLASSES      = 64
 
-# Language display name → IndicTrans2 language code
+# ── Vision / combiner ──────────────────────────────────────────────────────
+IMG_SIZE        = 224
+CONFIDENCE_GATE = 80.0
+KNN_K           = 7
+TOP_K           = 3
+
+# ── Embedding / RAG ────────────────────────────────────────────────────────
+EMBED_MODEL      = "sentence-transformers/all-MiniLM-L6-v2"
+COLLECTION_NAME  = "cropquery_knowledge"
+TOP_CHUNKS       = 5
+MIN_CROP_CHUNKS  = 2
+TOP_K_AGROBENCH  = 3
+TOP_K_KISAN      = 2
+
+# ── LLaVA ─────────────────────────────────────────────────────────────────
+LLAVA_MODEL_ID   = "llava-hf/llava-v1.6-mistral-7b-hf"
+LLAVA_MAX_TOKENS = 768
+LOAD_IN_4BIT     = True
+
+# ── IndicTrans2 ────────────────────────────────────────────────────────────
+INDICTRANS_MODEL = "ai4bharat/indictrans2-en-indic-1B"
+DEFAULT_LANGUAGE = "hin_Deva"
 LANGUAGE_CODES = {
     "Hindi":     "hin_Deva",
     "Marathi":   "mar_Deva",
@@ -45,9 +55,12 @@ LANGUAGE_CODES = {
     "Punjabi":   "pan_Guru",
     "Odia":      "ory_Orya",
     "Malayalam": "mal_Mlym",
-    "English":   None,           # no translation needed
+    "English":   None,
 }
 
-# ── Data sources (for knowledge base builder) ─────────────────────────────────
-KAGGLE_WHEAT_RUST_SLUG  = "ivanxavier/wheat-rust-vqa"           # WheatRustVQA
-HF_KISAN_DATASET        = "Franklin01/Dataset_prep01"           # Kisan Call Centre
+# ── Weather / Location ─────────────────────────────────────────────────────
+WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
+GEOCODE_API_URL = "https://nominatim.openstreetmap.org/reverse"
+
+# ── HuggingFace dataset ────────────────────────────────────────────────────
+HF_KISAN_DATASET = "Franklin01/Dataset_prep01"
