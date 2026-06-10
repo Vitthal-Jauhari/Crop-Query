@@ -1,12 +1,9 @@
 """
 CropQuery — Multilingual Translation (deep-translator backend)
+NOTE: Uses GoogleTranslator from deep-translator, NOT IndicTrans2.
 """
-
 from typing import Optional
-from .config import LANGUAGE_CODES, DEFAULT_LANGUAGE
 
-# deep-translator language codes differ from IndicTrans2 codes.
-# Map display names → Google Translate BCP-47 codes.
 _GOOGLE_LANG_CODES = {
     "Hindi":     "hi",
     "Tamil":     "ta",
@@ -29,7 +26,6 @@ class IndicTranslator:
     """
 
     def __init__(self, model_id: str = None):
-        # model_id kept for API compatibility, unused here
         self._loaded: Optional[bool] = None
         self._translator_cls = None
 
@@ -42,9 +38,7 @@ class IndicTranslator:
             self._loaded = True
             print("[Trans] deep-translator (GoogleTranslator) ready.")
         except ImportError:
-            print("[Trans] WARNING: deep-translator not installed.")
-            print("[Trans] Run: pip install deep-translator")
-            print("[Trans] Translation will return original English text.")
+            print("[Trans] WARNING: deep-translator not installed. pip install deep-translator")
             self._loaded = False
 
     def translate(
@@ -53,21 +47,15 @@ class IndicTranslator:
         target_language: str = "Hindi",
         src_lang: str = "eng_Latn",
     ) -> str:
-        # English — no translation needed
         google_code = _GOOGLE_LANG_CODES.get(target_language)
         if google_code is None:
-            return text
-
+            return text  # English — no translation needed
         self._load()
         if self._loaded is False:
             return text
-
         try:
-            # GoogleTranslator has a 5000-char limit per call; chunk if needed
             if len(text) <= 4500:
-                return self._translator_cls(
-                    source="en", target=google_code
-                ).translate(text) or text
+                return self._translator_cls(source="en", target=google_code).translate(text) or text
             else:
                 return self._translate_chunked(text, google_code)
         except Exception as e:
@@ -75,17 +63,34 @@ class IndicTranslator:
             return text
 
     def _translate_chunked(self, text: str, google_code: str) -> str:
-        """Split on double-newlines, translate each chunk, rejoin."""
         chunks = text.split("\n\n")
         translated = []
         t = self._translator_cls(source="en", target=google_code)
         for chunk in chunks:
             try:
-                result = t.translate(chunk) if chunk.strip() else chunk
-                translated.append(result or chunk)
+                translated.append(t.translate(chunk) if chunk.strip() else chunk)
             except Exception:
                 translated.append(chunk)
         return "\n\n".join(translated)
+
+    def to_english(self, text: str) -> str:
+        """
+        Translate any Indian-language question to English before RAG retrieval.
+        Uses source='auto' — GoogleTranslator detects the input language.
+        Returns text unchanged if already English or if translation fails.
+        """
+        if not text or not text.strip():
+            return text
+        self._load()
+        if self._loaded is False:
+            return text
+        try:
+            result = self._translator_cls(source="auto", target="en").translate(text)
+            print(f"[Trans] Question translated to English: {result[:80]}")
+            return result or text
+        except Exception as e:
+            print(f"[Trans] to_english failed: {e} — using original")
+            return text
 
     @staticmethod
     def available_languages() -> list:

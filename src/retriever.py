@@ -1,38 +1,35 @@
 """
 CropQuery — RAG Retriever
 """
-
+import re
 from typing import List, Dict, Any, Optional
 
 import chromadb
 from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 
 from .config import (
-    CHROMA_DIR, COLLECTION_NAME,
-    EMBED_MODEL, TOP_CHUNKS, MIN_CROP_CHUNKS,
-    TOP_K_AGROBENCH, TOP_K_KISAN,
+    CHROMA_DIR, COLLECTION_NAME, EMBED_MODEL,
+    TOP_CHUNKS, TOP_K_AGROBENCH, TOP_K_KISAN,
 )
-import re
 
 _RAG_JARGON_MAP = {
-    "new flush":        "new leaves",
-    "flush emergence":  "new leaves appearing",
-    "flush":            "new leaves",
-    "lesions":          "spots",
-    "necrosis":         "dead patches",
-    "necrotic":         "dead",
-    "inoculum":         "disease source",
-    "sporulation":      "disease spreading",
-    "oviposition":      "egg-laying",
-    "larval mining":    "pest damage inside leaves",
+    "new flush":          "new leaves",
+    "flush emergence":    "new leaves appearing",
+    "flush":              "new leaves",
+    "lesions":            "spots",
+    "necrosis":           "dead patches",
+    "necrotic":           "dead",
+    "inoculum":           "disease source",
+    "sporulation":        "disease spreading",
+    "oviposition":        "egg-laying",
+    "larval mining":      "pest damage inside leaves",
     "foliar application": "leaf spray",
-    "phytotoxicity":    "plant damage from chemicals",
-    "chlorosis":        "yellowing",
-    "defoliation":      "leaf fall",
-    "stippling":        "tiny spots",
-    "instar":           "pest stage",
+    "phytotoxicity":      "plant damage from chemicals",
+    "chlorosis":          "yellowing",
+    "defoliation":        "leaf fall",
+    "stippling":          "tiny spots",
+    "instar":             "pest stage",
 }
-
 
 def _clean_rag_chunk(text: str) -> str:
     for term, replacement in _RAG_JARGON_MAP.items():
@@ -47,19 +44,21 @@ class CropRetriever:
         chroma_dir: str = CHROMA_DIR,
         embed_model: str = EMBED_MODEL,
         top_k: int = TOP_CHUNKS,
-        min_crop_chunks: int = MIN_CROP_CHUNKS,
     ):
         self.top_k = top_k
-        self.min_crop_chunks = min_crop_chunks
         client = chromadb.PersistentClient(path=chroma_dir)
         ef = SentenceTransformerEmbeddingFunction(model_name=embed_model)
         self.collection = client.get_collection(
             name=COLLECTION_NAME,
             embedding_function=ef,
         )
-        print(f"[RAG] Connected to ChromaDB. {self.collection.count()} documents in collection.")
+        print(f"[RAG] Connected to ChromaDB. {self.collection.count()} documents.")
 
-    def retrieve(self, predicted_class, farmer_question="What should I do?"):
+    def retrieve(
+        self,
+        predicted_class: Optional[str],
+        farmer_question: str = "What should I do?",
+    ) -> List[Dict[str, Any]]:
         query     = self._build_query(predicted_class, farmer_question)
         crop      = self._extract_crop(predicted_class)
         condition = self._extract_condition(predicted_class)
@@ -67,7 +66,7 @@ class CropRetriever:
         crop_chunks  = []
         kisan_chunks = []
 
-        # 1. Crop+condition specific agrobench chunks
+        # 1. Crop + condition specific agrobench chunks
         if crop:
             try:
                 where_filter = {"$and": [
@@ -76,7 +75,6 @@ class CropRetriever:
                 ]}
                 if condition:
                     where_filter["$and"].append({"condition": {"$eq": condition}})
-
                 r = self.collection.query(
                     query_texts=[query],
                     n_results=TOP_K_AGROBENCH,
@@ -85,7 +83,7 @@ class CropRetriever:
                 )
                 crop_chunks = self._parse_results(r)
 
-                # If condition filter returned nothing, fall back to crop-only
+                # If condition filter returned nothing, retry crop-only
                 if not crop_chunks and condition:
                     r = self.collection.query(
                         query_texts=[query],
@@ -97,7 +95,6 @@ class CropRetriever:
                         include=["documents", "metadatas", "distances"],
                     )
                     crop_chunks = self._parse_results(r)
-
             except Exception as e:
                 print(f"[RAG] Crop query failed: {e}")
 
@@ -113,7 +110,7 @@ class CropRetriever:
         except Exception as e:
             print(f"[RAG] Kisan query failed: {e}")
 
-        # 3. Fallback — unfiltered query if no crop-specific chunks
+        # 3. Fallback — unfiltered if still nothing crop-specific
         if not crop_chunks:
             try:
                 r = self.collection.query(
@@ -122,15 +119,27 @@ class CropRetriever:
                     include=["documents", "metadatas", "distances"],
                 )
                 crop_chunks = self._parse_results(r)
+                print("[RAG] Warning: using unfiltered fallback — verify chunks are relevant")
             except Exception as e:
-                print(f"[RAG] Fallback query failed: {e}")
+                print(f"[RAG] Unfiltered fallback failed: {e}")
+
+        # 4. Post-filter by condition to reduce mixed chunks
+        if condition and crop_chunks:
+            condition_lower = condition.lower()
+            filtered = [
+                c for c in crop_chunks
+                if c["metadata"].get("source") != "agrobench"
+                or c["metadata"].get("condition", "").lower() == condition_lower
+                or c["metadata"].get("condition", "").lower() in ("general", "unknown", "")
+            ]
+            if filtered:
+                crop_chunks = filtered
 
         return (crop_chunks + kisan_chunks)[:(TOP_K_AGROBENCH + TOP_K_KISAN)]
 
-    def build_rag_context(self, chunks):
+    def build_rag_context(self, chunks: List[Dict[str, Any]]) -> str:
         if not chunks:
             return "No specific knowledge retrieved. Use general agronomy principles."
-
         MAX_CHUNK_CHARS = 400
         lines = ["=== Retrieved Agricultural Knowledge ==="]
         for i, chunk in enumerate(chunks, 1):
@@ -144,9 +153,8 @@ class CropRetriever:
                 label += f" | Disease: {cond}"
             lines.append(label)
             text = _clean_rag_chunk(chunk["text"])
-            # Truncate long chunks
             if len(text) > MAX_CHUNK_CHARS:
-                text = text[:MAX_CHUNK_CHARS].rsplit(".", 1)[0] + "."
+                text = text[:MAX_CHUNK_CHARS].rsplit(". ", 1)[0] + "."
             lines.append(text)
             lines.append("")
         return "\n".join(lines)
@@ -161,8 +169,7 @@ class CropRetriever:
     def _extract_condition(predicted_class: Optional[str]) -> Optional[str]:
         if not predicted_class or "__" not in predicted_class:
             return None
-        condition = predicted_class.split("__", 1)[1].replace("_", " ").title()
-        return condition
+        return predicted_class.split("__", 1)[1].replace("_", " ").title()
 
     @staticmethod
     def _build_query(predicted_class: Optional[str], farmer_question: str) -> str:
@@ -178,9 +185,10 @@ class CropRetriever:
         chunks = []
         if not results or not results.get("documents"):
             return chunks
-        docs  = results["documents"][0]
-        metas = results["metadatas"][0]
-        dists = results["distances"][0]
-        for doc, meta, dist in zip(docs, metas, dists):
+        for doc, meta, dist in zip(
+            results["documents"][0],
+            results["metadatas"][0],
+            results["distances"][0],
+        ):
             chunks.append({"text": doc, "metadata": meta, "distance": dist})
         return chunks
