@@ -13,7 +13,10 @@ from cropquery import CropQueryPipeline
 from cropquery.config import CONFIDENCE_GATE
 from cropquery.translator import IndicTranslator
 from cropquery.pipeline import _protect_chemicals, _restore_chemicals
+from cropquery.advisor import _ensure_closing_note, _clean_jargon, _validate_advice
 
+# pipeline is None until init() is called from the notebook.
+# This prevents a second model load when Cell 11 does 'from cropquery.app import demo'.
 pipeline: "Optional[CropQueryPipeline]" = None
 LANGUAGES = IndicTranslator.available_languages()
 
@@ -70,6 +73,7 @@ def run_cropquery(
         )
         return
 
+    # Step 1: Vision — unpack tuple (FIXED)
     preds, img_tensor = pipeline.vision.predict(image)
     resnet_hint, used_faiss, faiss_sim = pipeline.vision.gate(preds, img_tensor)
 
@@ -94,6 +98,10 @@ def run_cropquery(
 
     dropdown_choices = [f"{cls} ({conf:.0f}%)" for cls, conf in preds]
 
+    # ── Low-confidence gate ───────────────────────────────────────────
+    # Yield the confidence panel with a prompt, then STOP.
+    # Advice is only generated after the farmer confirms via confirm_btn
+    # → rerun_with_confirmed(). This prevents streaming unverified advice.
     if not is_high:
         yield (
             disease_html,
@@ -112,23 +120,29 @@ def run_cropquery(
         "", gr.update(visible=False),
     )
 
+    # Step 2: Context
     try:
         weather_ctx  = pipeline.context_fetcher.get_weather()
         location_ctx = pipeline.context_fetcher.get_location()
     except Exception:
         weather_ctx = location_ctx = None
 
+    # Use confirmed_class if farmer selected one
     if confirmed_class:
         top_class   = confirmed_class.split(" (")[0]
         resnet_hint = top_class
     else:
         top_class = preds[0][0] if preds else None
 
+    # Translate question to English for retrieval quality
+    # (farmer may type in Hindi, Telugu, etc. — FAISS/ChromaDB index is English)
     english_question = pipeline.translator.to_english(farmer_question) if farmer_question else farmer_question
 
+    # Step 3: RAG
     chunks      = pipeline.retriever.retrieve(top_class, english_question or "What should I do?")
     rag_context = pipeline.retriever.build_rag_context(chunks)
 
+    # Step 4: Stream LLaVA
     try:
         streamer = pipeline.advisor.generate_streaming(
             image=image, rag_context=rag_context,
@@ -136,6 +150,7 @@ def run_cropquery(
             resnet_hint=resnet_hint,
             confidence=preds[0][1] if preds else None,
             weather_ctx=weather_ctx, location_ctx=location_ctx,
+            predictions=preds,
         )
         advice = ""
         for token in streamer:
@@ -155,10 +170,25 @@ def run_cropquery(
             "", gr.update(visible=False),
         )
 
+    # Step 5: Translate output + irrigation
+    # FIXED: the streaming loop above only accumulates raw model tokens — unlike
+    # pipeline.run(), it never applied jargon cleaning, the closing-note guarantee,
+    # or the pest/fungicide safety validator. That meant this Gradio demo path (the
+    # one most likely to be presented from) silently skipped the safety check
+    # entirely. Apply all three here, in the same order generate() uses internally,
+    # BEFORE translation — validation must run on the English text since the
+    # pest/fungicide keyword match relies on English words.
+    advice = _ensure_closing_note(_clean_jargon(advice))
+    advice = _validate_advice(advice, resnet_hint)
+
+    # FIXED: wrap translate() with _protect_chemicals/_restore_chemicals, same as
+    # pipeline.run() already does — GoogleTranslator can otherwise mangle chemical
+    # names or dosage strings (e.g. "2 ml/L") when translating into Hindi/Telugu/etc.
     if target_language != "English":
         protected, placeholders = _protect_chemicals(advice)
-        translated = pipeline.translator.translate(protected, target_language)
-        advice = _restore_chemicals(translated, placeholders)
+        advice = _restore_chemicals(
+            pipeline.translator.translate(protected, target_language), placeholders
+        )
 
     irrigation_text = ""
     try:
@@ -167,7 +197,10 @@ def run_cropquery(
             weather_ctx=weather_ctx,
         )
         if target_language != "English" and irrigation_text:
-            irrigation_text = pipeline.translator.translate(irrigation_text, target_language)
+            protected_irr, irr_placeholders = _protect_chemicals(irrigation_text)
+            irrigation_text = _restore_chemicals(
+                pipeline.translator.translate(protected_irr, target_language), irr_placeholders
+            )
     except Exception:
         pass
 
@@ -194,6 +227,7 @@ def rerun_with_confirmed(
     except Exception:
         weather_ctx = location_ctx = None
 
+    # Translate question to English for retrieval quality
     english_question = pipeline.translator.to_english(farmer_question) if farmer_question else farmer_question
 
     rag_chunks  = pipeline.retriever.retrieve(confirmed_class, english_question or farmer_question)
@@ -209,8 +243,9 @@ def rerun_with_confirmed(
         advice = f"[RAG-only]\n\n{rag_context}"
     if target_language != "English":
         protected, placeholders = _protect_chemicals(advice)
-        translated = pipeline.translator.translate(protected, target_language)
-        advice = _restore_chemicals(translated, placeholders)
+        advice = _restore_chemicals(
+            pipeline.translator.translate(protected, target_language), placeholders
+        )
     return advice
 
 
@@ -220,7 +255,6 @@ CSS = """
 #advice-panel { background: #f9fbe7; border-radius: 8px; padding: 16px; min-height: 200px; }
 #low-conf-box { background: #fff3e0; border: 1px solid #f57c00; border-radius: 8px; padding: 16px; }
 """
-
 
 with gr.Blocks(css=CSS, title="CropQuery") as demo:
     gr.HTML("""

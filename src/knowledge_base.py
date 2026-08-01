@@ -12,7 +12,6 @@ from .config import CHROMA_DIR, COLLECTION_NAME, EMBED_MODEL, HF_KISAN_DATASET, 
 _KISAN_QUESTION_COLS = ["question","questions","Question","Questions","query","Query","farmer_query","input","text"]
 _KISAN_ANSWER_COLS   = ["answer","answers","Answer","Answers","expert_answer","response","Response","output","label"]
 
-
 def _get_col(row: dict, candidates: list) -> str:
     for key in candidates:
         val = row.get(key)
@@ -20,6 +19,18 @@ def _get_col(row: dict, candidates: list) -> str:
             return str(val).strip()
     return ""
 
+
+def _normalize_label(s) -> str:
+    """
+    Must exactly match _normalize_label() in retriever.py — this is what lets
+    an $eq metadata filter succeed regardless of the casing/spacing/underscores
+    used in the source dataset vs. the predicted class label. If you change
+    the normalization here, change it in retriever.py too and rebuild the KB
+    (force_rebuild=True) so old un-normalized entries are replaced.
+    """
+    if not s:
+        return ""
+    return re.sub(r"[\s_\-]+", " ", str(s)).strip().lower()
 
 def _parse_kisan_dataset() -> List[Dict[str, Any]]:
     try:
@@ -44,17 +55,20 @@ def _parse_kisan_dataset() -> List[Dict[str, Any]]:
             skipped += 1
             continue
         text = f"Farmer Query: {question}\nExpert Answer: {answer}"
+        # FIXED: truncate at sentence boundary, not mid-word
         if len(text) > 1500:
             text = text[:1500].rsplit(". ", 1)[0] + "."
         chunks.append({
             "id":       f"kisan_{i}",
             "text":     text,
             "metadata": {
-                "source":     "kisan_call_centre",
-                "crop":       "general",
-                "condition":  "general",
-                "chunk_type": "qa_pair",
-                "language":   "en",
+                "source":         "kisan_call_centre",
+                "crop":           "general",
+                "condition":      "general",
+                "crop_norm":      "general",
+                "condition_norm": "general",
+                "chunk_type":     "qa_pair",
+                "language":       "en",
             },
         })
     if skipped:
@@ -62,10 +76,10 @@ def _parse_kisan_dataset() -> List[Dict[str, Any]]:
     print(f"[KB] Kisan: {len(chunks)} Q&A pairs loaded")
     return chunks
 
-
 def _build_agrobench_chunks() -> List[Dict[str, Any]]:
     try:
         from datasets import load_dataset
+        import os
         token = os.environ.get("HF_TOKEN")
         ds = load_dataset(
             HF_AGROBENCH_DATASET,
@@ -78,11 +92,13 @@ def _build_agrobench_chunks() -> List[Dict[str, Any]]:
                 "id":       f"agrobench_{i}",
                 "text":     row["text"],
                 "metadata": {
-                    "source":     "agrobench",
-                    "crop":       row["crop"],
-                    "condition":  row["condition"],
-                    "chunk_type": "disease_entry",
-                    "language":   "en",
+                    "source":         "agrobench",
+                    "crop":           row["crop"],
+                    "condition":      row["condition"],
+                    "crop_norm":      _normalize_label(row["crop"]),
+                    "condition_norm": _normalize_label(row["condition"]),
+                    "chunk_type":     "disease_entry",
+                    "language":       "en",
                 },
             })
         print(f"[KB] AgroBench: {len(chunks)} entries loaded from HuggingFace")
@@ -90,7 +106,6 @@ def _build_agrobench_chunks() -> List[Dict[str, Any]]:
     except Exception as e:
         print(f"[KB] AgroBench HF load failed: {e}")
         return []
-
 
 class KnowledgeBaseBuilder:
     def __init__(self, chroma_dir: str = CHROMA_DIR, embed_model: str = EMBED_MODEL):

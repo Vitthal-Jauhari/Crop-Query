@@ -38,15 +38,11 @@ _STATE_ZONE = {
     "Chhattisgarh":     "Eastern Plateau and Hills",
 }
 
-
 def _current_season() -> str:
     m = datetime.datetime.now().month
-    if 6 <= m <= 10:
-        return "Kharif"
-    elif m >= 11 or m <= 3:
-        return "Rabi"
+    if 6 <= m <= 10: return "Kharif"
+    elif m >= 11 or m <= 3: return "Rabi"
     return "Zaid"
-
 
 _CROP_WATER_REQ: Dict[str, Dict[str, float]] = {
     "Tomato":  {"seedling":15,"vegetative":25,"flowering":40,"fruiting":45,"default":35},
@@ -58,6 +54,7 @@ _CROP_WATER_REQ: Dict[str, Dict[str, float]] = {
     "Apple":   {"seedling":20,"vegetative":30,"flowering":35,"fruiting":40,"default":30},
     "Cashew":  {"seedling":15,"vegetative":20,"flowering":25,"fruiting":30,"default":22},
     "Pea":     {"seedling":15,"vegetative":22,"flowering":30,"fruiting":28,"default":24},
+    "Pumpkin": {"seedling":18,"vegetative":28,"flowering":35,"fruiting":40,"default":30},
     "default": {"default":30},
 }
 
@@ -106,7 +103,7 @@ class ContextFetcher:
                 "district":           geo.get("city", ""),
                 "latitude":           lat,
                 "longitude":          lon,
-                "agro_climatic_zone": zone,
+                "agro_climatic_zone": zone,  # None for non-Indian locations
                 "current_season":     _current_season(),
             }
         except Exception as e:
@@ -126,21 +123,16 @@ class ContextFetcher:
         lon = loc.get("longitude") or 77.2
         try:
             params = {
-                "latitude":      lat,
-                "longitude":     lon,
+                "latitude":      lat, "longitude":    lon,
                 "current":       "temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation",
                 "hourly":        "precipitation_probability",
                 "daily":         "precipitation_sum,temperature_2m_max",
-                "past_days":     14,
-                "forecast_days": 7,
-                "timezone":      "auto",
+                "past_days":     14, "forecast_days": 7, "timezone": "auto",
             }
-            data = requests.get(WEATHER_API_URL, params=params, timeout=8).json()
-
+            data    = requests.get(WEATHER_API_URL, params=params, timeout=8).json()
             current = data.get("current", {})
             daily   = data.get("daily", {})
             hourly  = data.get("hourly", {})
-
             precip_list  = daily.get("precipitation_sum", [])
             rainfall_14d = sum(p for p in precip_list[:14] if p) if precip_list else None
             rain_probs   = hourly.get("precipitation_probability", [])
@@ -176,16 +168,30 @@ class ContextFetcher:
         crop_key     = crop if crop in _CROP_WATER_REQ else "default"
         stage_key    = growth_stage if growth_stage in _CROP_WATER_REQ.get(crop_key, {}) else "default"
         water_need   = _CROP_WATER_REQ[crop_key].get(stage_key, 30)
+    
+        # Store structured values for FastAPI to pull via getattr
+        self.last_water_mm = water_need
+    
         if not forecast_7d:
+            self.last_irrigation_days = 3  # fallback
             return (
                 f"[Irrigation] {crop or 'Crop'} needs ~{water_need} mm/week. "
                 "Weather forecast unavailable — irrigate based on soil moisture."
             )
+    
         rain_next_7d     = sum(d.get("rain_mm", 0) for d in forecast_7d[:7])
         recent_carryover = min(rainfall_14d * _CARRYOVER_FACTOR, water_need)
         effective_supply = rain_next_7d + recent_carryover
         deficit_mm       = max(0, water_need - effective_supply)
-        saturation_note  = ""
+    
+        # Estimate days until next irrigation from deficit
+        daily_need = water_need / 7
+        if deficit_mm <= 0:
+            self.last_irrigation_days = 7
+        else:
+            self.last_irrigation_days = max(1, round(deficit_mm / daily_need))
+    
+        saturation_note = ""
         if rainfall_14d > _SATURATION_THRESHOLD_MM:
             saturation_note = (
                 f" ⚠️ Heavy rain in last 14 days ({rainfall_14d:.0f} mm) — "

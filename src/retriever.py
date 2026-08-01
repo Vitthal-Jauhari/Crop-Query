@@ -37,6 +37,18 @@ def _clean_rag_chunk(text: str) -> str:
     return text
 
 
+def _normalize_label(s: Optional[str]) -> str:
+    """
+    Collapse whitespace/underscores/hyphens and lowercase, so 'Downy_Mildew',
+    'downy mildew', and 'Downy  Mildew' all compare equal. Must match the
+    normalization applied to crop_norm/condition_norm at ingest time in
+    knowledge_base.py — if you change one, change both and rebuild the KB.
+    """
+    if not s:
+        return ""
+    return re.sub(r"[\s_\-]+", " ", str(s)).strip().lower()
+
+
 class CropRetriever:
 
     def __init__(
@@ -70,11 +82,11 @@ class CropRetriever:
         if crop:
             try:
                 where_filter = {"$and": [
-                    {"source": {"$eq": "agrobench"}},
-                    {"crop":   {"$eq": crop}},
+                    {"source":    {"$eq": "agrobench"}},
+                    {"crop_norm": {"$eq": crop}},
                 ]}
                 if condition:
-                    where_filter["$and"].append({"condition": {"$eq": condition}})
+                    where_filter["$and"].append({"condition_norm": {"$eq": condition}})
                 r = self.collection.query(
                     query_texts=[query],
                     n_results=TOP_K_AGROBENCH,
@@ -89,8 +101,8 @@ class CropRetriever:
                         query_texts=[query],
                         n_results=TOP_K_AGROBENCH,
                         where={"$and": [
-                            {"source": {"$eq": "agrobench"}},
-                            {"crop":   {"$eq": crop}},
+                            {"source":    {"$eq": "agrobench"}},
+                            {"crop_norm": {"$eq": crop}},
                         ]},
                         include=["documents", "metadatas", "distances"],
                     )
@@ -125,12 +137,11 @@ class CropRetriever:
 
         # 4. Post-filter by condition to reduce mixed chunks
         if condition and crop_chunks:
-            condition_lower = condition.lower()
             filtered = [
                 c for c in crop_chunks
                 if c["metadata"].get("source") != "agrobench"
-                or c["metadata"].get("condition", "").lower() == condition_lower
-                or c["metadata"].get("condition", "").lower() in ("general", "unknown", "")
+                or c["metadata"].get("condition_norm", "") == condition
+                or c["metadata"].get("condition_norm", "") in ("general", "unknown", "")
             ]
             if filtered:
                 crop_chunks = filtered
@@ -163,13 +174,13 @@ class CropRetriever:
     def _extract_crop(predicted_class: Optional[str]) -> Optional[str]:
         if not predicted_class:
             return None
-        return predicted_class.split("__")[0].replace("_", " ")
+        return _normalize_label(predicted_class.split("__")[0]) or None
 
     @staticmethod
     def _extract_condition(predicted_class: Optional[str]) -> Optional[str]:
         if not predicted_class or "__" not in predicted_class:
             return None
-        return predicted_class.split("__", 1)[1].replace("_", " ").title()
+        return _normalize_label(predicted_class.split("__", 1)[1]) or None
 
     @staticmethod
     def _build_query(predicted_class: Optional[str], farmer_question: str) -> str:

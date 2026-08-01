@@ -15,7 +15,6 @@ _CHEMICAL_PRESERVE = [
 ]
 _CHEMICAL_PRESERVE.sort(key=len, reverse=True)
 
-
 def _protect_chemicals(text: str):
     placeholders = {}
     for i, name in enumerate(_CHEMICAL_PRESERVE):
@@ -25,7 +24,6 @@ def _protect_chemicals(text: str):
             placeholders[key] = pattern.search(text).group(0)
             text = pattern.sub(key, text)
     return text, placeholders
-
 
 def _restore_chemicals(text: str, placeholders: dict) -> str:
     for key, original in placeholders.items():
@@ -93,16 +91,27 @@ class CropQueryPipeline:
     ) -> CropQueryResult:
         result = CropQueryResult(target_language=target_language)
 
+        # Step 1: Vision — unpack tuple (FIXED: no _last_tensor side-channel)
         result.predictions, img_tensor = self.vision.predict(image)
         result.resnet_hint, result.used_faiss, result.faiss_similarity = \
             self.vision.gate(result.predictions, img_tensor)
 
+        # Step 1.5: Healthy short-circuit — skip advisor entirely if high-confidence healthy
+        if result.resnet_hint and "Healthy" in result.resnet_hint and result.is_high_confidence:
+            from .advisor import _HEALTHY_RESPONSE
+            result.english_advice = _HEALTHY_RESPONSE
+            if target_language != "English":
+                result.translated_advice = self.translator.translate(_HEALTHY_RESPONSE, target_language)
+            return result
+
+        # Step 2: Context
         try:
             result.weather_ctx  = self.context_fetcher.get_weather()
             result.location_ctx = self.context_fetcher.get_location()
         except Exception as e:
             print(f"[Pipeline] Context fetch failed (non-fatal): {e}")
 
+        # Step 3: Irrigation
         try:
             result.irrigation_advice = self.context_fetcher.get_irrigation_advice(
                 crop=(result.top_class.split("__")[0].replace("_", " ")
@@ -112,14 +121,19 @@ class CropQueryPipeline:
         except Exception as e:
             print(f"[Pipeline] Irrigation advisory failed (non-fatal): {e}")
 
-        english_question = self.translator.to_english(farmer_question) if farmer_question else farmer_question
+        # Translate farmer's question to English for RAG retrieval quality
+        english_question = (
+            self.translator.to_english(farmer_question) if farmer_question else farmer_question
+        )
 
+        # Step 4: RAG — FIXED: use english_question, not raw farmer_question
         result.rag_chunks = self.retriever.retrieve(
             predicted_class=result.top_class,
-            farmer_question=english_question or farmer_question,
+            farmer_question=english_question,
         )
         rag_context = self.retriever.build_rag_context(result.rag_chunks)
 
+        # Step 5: LLaVA
         if self.advisor:
             result.english_advice = self.advisor.generate(
                 image=image, rag_context=rag_context,
@@ -128,6 +142,7 @@ class CropQueryPipeline:
                 confidence=result.top_confidence,
                 weather_ctx=result.weather_ctx,
                 location_ctx=result.location_ctx,
+                predictions=result.predictions,
             )
         else:
             result.english_advice = (
@@ -136,6 +151,10 @@ class CropQueryPipeline:
                 + rag_context
             )
 
+        # Step 6: Validation + Translation
+        # FIXED: _validate_advice now runs for BOTH English and translated paths.
+        # Validation must happen on the English text (pest/fungicide check relies
+        # on English keyword matching), then translate the validated text.
         from .advisor import _clean_jargon, _validate_advice
 
         result.english_advice = _validate_advice(
