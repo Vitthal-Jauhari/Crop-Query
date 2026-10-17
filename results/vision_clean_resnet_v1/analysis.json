@@ -1,0 +1,139 @@
+{
+  "manifest_sha256": "97414fc5d2fac35463eadc88b88473073a35ac22b31d1f82eb595a36fd8e7ee0",
+  "seed": 42,
+  "n_test": 19923,
+  "selected_epochs_zero_based": {
+    "base": 5,
+    "ce": 3,
+    "f2": 3
+  },
+  "selected_checkpoint_files": {
+    "base": {
+      "relative_path": "checkpoints/clean_resnet_v1/base_best.pth",
+      "bytes": 284147575,
+      "sha256": "bd99ba9d844671b86f7b887cbfe1da4a3136cf9b178ba8f2f042f6df4c558f89"
+    },
+    "ce": {
+      "relative_path": "checkpoints/clean_resnet_v1/ce_best.pth",
+      "bytes": 284145825,
+      "sha256": "75f16b839bff9e84c13189283d7cc0e3091dbcbfae0a097c6d7446c4504375d5"
+    },
+    "f2": {
+      "relative_path": "checkpoints/clean_resnet_v1/f2_best.pth",
+      "bytes": 284145825,
+      "sha256": "bfa53066ee7b69cc6d34637c9df9d585968228b938765cb5e9719636b4f0c854"
+    }
+  },
+  "comparisons": {
+    "ce_minus_base": {
+      "difference_pp": 0.24092757114892335,
+      "group_bootstrap_95pct_ci_pp": [
+        0.02514894537435186,
+        0.4437959817686707
+      ],
+      "left_wrong_right_right": 179,
+      "left_right_right_wrong": 227
+    },
+    "f2_minus_base": {
+      "difference_pp": -0.14556040756914118,
+      "group_bootstrap_95pct_ci_pp": [
+        -0.4125610262176477,
+        0.1004105595885379
+      ],
+      "left_wrong_right_right": 280,
+      "left_right_right_wrong": 251
+    },
+    "f2_minus_ce": {
+      "difference_pp": -0.38648797871806456,
+      "group_bootstrap_95pct_ci_pp": [
+        -0.6136710118403723,
+        -0.15982062542852077
+      ],
+      "left_wrong_right_right": 259,
+      "left_right_right_wrong": 182
+    }
+  },
+  "source_results": {
+    "ayushbpanchal/cashew-image-dataset": {
+      "n": 3877,
+      "base_top1": 0.9646633995357234,
+      "ce_top1": 0.966726850657725,
+      "f2_top1": 0.9602785659014702,
+      "f2_minus_ce_pp": -0.6448284756254807
+    },
+    "binnassor89/melon-macronutrient-deficiency-dataset": {
+      "n": 29,
+      "base_top1": 1.0,
+      "ce_top1": 1.0,
+      "f2_top1": 1.0,
+      "f2_minus_ce_pp": 0.0
+    },
+    "mexwell/crop-diseases-classification": {
+      "n": 2691,
+      "base_top1": 0.8000743218134523,
+      "ce_top1": 0.8112225938312895,
+      "f2_top1": 0.8097361575622445,
+      "f2_minus_ce_pp": -0.14864362690449884
+    },
+    "nirmalsankalana/rocole-a-robusta-coffee-leaf-images-dataset": {
+      "n": 229,
+      "base_top1": 0.8820960698689956,
+      "ce_top1": 0.8602620087336245,
+      "f2_top1": 0.8558951965065502,
+      "f2_minus_ce_pp": -0.4366812227074246
+    },
+    "shubham2703/five-crop-diseases-dataset": {
+      "n": 1978,
+      "base_top1": 0.9534883720930233,
+      "ce_top1": 0.9539939332659252,
+      "f2_top1": 0.9433771486349848,
+      "f2_minus_ce_pp": -1.0616784630940401
+    },
+    "tahmidmir/pumpkin-leaf-diseases-dataset-from-bangladesh": {
+      "n": 300,
+      "base_top1": 0.86,
+      "ce_top1": 0.85,
+      "f2_top1": 0.8366666666666667,
+      "f2_minus_ce_pp": -1.3333333333333308
+    },
+    "tushar5harma/plant-village-dataset-updated": {
+      "n": 10062,
+      "base_top1": 0.9878751739216856,
+      "ce_top1": 0.9893659312263964,
+      "f2_top1": 0.9879745577419996,
+      "f2_minus_ce_pp": -0.1391373484396774
+    },
+    "yasaminborhani/wheatrustclassificationdataset": {
+      "n": 551,
+      "base_top1": 0.9872958257713249,
+      "ce_top1": 0.9909255898366606,
+      "f2_top1": 0.9782214156079855,
+      "f2_minus_ce_pp": -1.2704174228675091
+    },
+    "zunorain/pea-plant-dataset": {
+      "n": 206,
+      "base_top1": 0.9660194174757282,
+      "ce_top1": 0.9660194174757282,
+      "f2_top1": 0.9611650485436893,
+      "f2_minus_ce_pp": -0.4854368932038833
+    }
+  },
+  "error_categories": {
+    "base": {
+      "correct": 18951,
+      "wrong_condition_same_crop": 888,
+      "wrong_crop": 84
+    },
+    "ce": {
+      "correct": 18999,
+      "wrong_condition_same_crop": 850,
+      "wrong_crop": 74
+    },
+    "f2": {
+      "correct": 18922,
+      "wrong_condition_same_crop": 933,
+      "wrong_crop": 68
+    }
+  },
+  "interpretation": "One-seed internal screen. Group bootstrap reflects test-group sampling only; source, seed, and external-domain uncertainty are not represented."
+}

@@ -1,0 +1,27 @@
+{
+  "historical_ensemble_scores": {
+    "checkpoint_specific_training_membership": "unknown",
+    "reported_test_split_created": "after training in notebook",
+    "held_out_status": "not established",
+    "final_phase_d_f2_checkpoint_files": "unavailable locally"
+  },
+  "new_prospective_split": {
+    "manifest": "data/split_manifest_v1.csv",
+    "manifest_sha256": "97414fc5d2fac35463eadc88b88473073a35ac22b31d1f82eb595a36fd8e7ee0",
+    "mapped_images": 132955,
+    "class_count": 64,
+    "split_counts": {
+      "train": 106332,
+      "val": 6635,
+      "test": 19923,
+      "exclude_conflicting_labels": 65
+    },
+    "unique_groups": 112429,
+    "largest_group_images": 14,
+    "excluded_conflicting_labels": 65,
+    "assigned_group_partition_overlap": 0,
+    "exact_sha_partition_overlap": 0,
+    "grouping_limit": "Exact and 64-bit image hashes plus filename families do not find all near duplicates or plant-level repeats."
+  },
+  "interpretation": "New split was frozen before new ResNet50 training; matching a historical image total does not establish historical checkpoint provenance."
+}

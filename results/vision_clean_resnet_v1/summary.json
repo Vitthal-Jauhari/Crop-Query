@@ -1,0 +1,605 @@
+{
+  "manifest_sha256": "97414fc5d2fac35463eadc88b88473073a35ac22b31d1f82eb595a36fd8e7ee0",
+  "seed": 42,
+  "selected_epochs_zero_based": {
+    "base": 5,
+    "ce": 3,
+    "f2": 3
+  },
+  "n_test": 19923,
+  "base_top1": 0.951212166842343,
+  "base_macro_f1": 0.9361091066326708,
+  "ce_top1": 0.9536214425538323,
+  "f2_top1": 0.9497565627666517,
+  "difference_pp": -0.3864879787180642,
+  "ce_macro_f1": 0.9371225493976454,
+  "f2_macro_f1": 0.9291583749929155,
+  "ce_wrong_f2_right": 182,
+  "ce_right_f2_wrong": 259,
+  "test_groups": 16864,
+  "group_bootstrap_95pct_ci_pp": [
+    -0.6136710118403723,
+    -0.15982062542852077
+  ],
+  "bootstrap_scope": "Resampled test groups only; excludes training-seed and source-domain uncertainty.",
+  "base_scope": "Descriptive common-start reference added before test opening after CE validation fell; primary paired contrast remains CE versus F2.",
+  "per_class": {
+    "Apple__Apple_Scab": {
+      "support": 378,
+      "base_recall": 0.9973544973544973,
+      "ce_recall": 0.9973544973544973,
+      "f2_recall": 0.9920634920634921,
+      "base_f1": 0.9960369881109643,
+      "ce_f1": 0.9947229551451188,
+      "f2_f1": 0.9907529722589168
+    },
+    "Apple__Black_Rot": {
+      "support": 373,
+      "base_recall": 0.9946380697050938,
+      "ce_recall": 0.9919571045576407,
+      "f2_recall": 1.0,
+      "base_f1": 0.9973118279569892,
+      "ce_f1": 0.9959623149394348,
+      "f2_f1": 0.9973262032085561
+    },
+    "Apple__Cedar_Apple_Rust": {
+      "support": 330,
+      "base_recall": 0.9939393939393939,
+      "ce_recall": 1.0,
+      "f2_recall": 0.990909090909091,
+      "base_f1": 0.9969604863221885,
+      "ce_f1": 1.0,
+      "f2_f1": 0.9954337899543378
+    },
+    "Apple__Healthy": {
+      "support": 377,
+      "base_recall": 1.0,
+      "ce_recall": 0.9946949602122016,
+      "f2_recall": 0.9973474801061007,
+      "base_f1": 0.9986754966887417,
+      "ce_f1": 0.9960159362549801,
+      "f2_f1": 0.9907773386034255
+    },
+    "Bell_Pepper__Bacterial_Spot": {
+      "support": 359,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 0.9986091794158554,
+      "ce_f1": 0.9972222222222222,
+      "f2_f1": 0.9930843706777317
+    },
+    "Bell_Pepper__Healthy": {
+      "support": 373,
+      "base_recall": 0.9946380697050938,
+      "ce_recall": 0.9919571045576407,
+      "f2_recall": 0.9946380697050938,
+      "base_f1": 0.958656330749354,
+      "ce_f1": 0.9523809523809523,
+      "f2_f1": 0.9880159786950732
+    },
+    "Cashew__Anthracnose": {
+      "support": 742,
+      "base_recall": 0.9164420485175202,
+      "ce_recall": 0.9123989218328841,
+      "f2_recall": 0.9137466307277629,
+      "base_f1": 0.9245411284840245,
+      "ce_f1": 0.9273972602739726,
+      "f2_f1": 0.9149797570850202
+    },
+    "Cashew__Gummosis": {
+      "support": 330,
+      "base_recall": 1.0,
+      "ce_recall": 0.996969696969697,
+      "f2_recall": 1.0,
+      "base_f1": 0.9969788519637462,
+      "ce_f1": 0.9924585218702866,
+      "f2_f1": 0.9969788519637462
+    },
+    "Cashew__Healthy": {
+      "support": 1082,
+      "base_recall": 0.9768946395563771,
+      "ce_recall": 0.9833641404805915,
+      "f2_recall": 0.966728280961183,
+      "base_f1": 0.9683921209344938,
+      "ce_f1": 0.9761467889908257,
+      "f2_f1": 0.9649446494464945
+    },
+    "Cashew__Leaf_Miner": {
+      "support": 745,
+      "base_recall": 0.9422818791946309,
+      "ce_recall": 0.9476510067114094,
+      "f2_recall": 0.9422818791946309,
+      "base_f1": 0.9454545454545454,
+      "ce_f1": 0.9457468184862693,
+      "f2_f1": 0.9385026737967914
+    },
+    "Cashew__Red_Rust": {
+      "support": 978,
+      "base_recall": 0.9928425357873211,
+      "ce_recall": 0.9938650306748467,
+      "f2_recall": 0.9887525562372188,
+      "base_f1": 0.9923352069494124,
+      "ce_f1": 0.9923430321592649,
+      "f2_f1": 0.9907786885245902
+    },
+    "Cassava__Bacterial_Blight": {
+      "support": 138,
+      "base_recall": 0.6811594202898551,
+      "ce_recall": 0.6666666666666666,
+      "f2_recall": 0.6739130434782609,
+      "base_f1": 0.6204620462046204,
+      "ce_f1": 0.6133333333333333,
+      "f2_f1": 0.6283783783783784
+    },
+    "Cassava__Brown_Streak_Disease": {
+      "support": 275,
+      "base_recall": 0.7854545454545454,
+      "ce_recall": 0.76,
+      "f2_recall": 0.76,
+      "base_f1": 0.700162074554295,
+      "ce_f1": 0.7145299145299145,
+      "f2_f1": 0.6978297161936561
+    },
+    "Cassava__Green_Mottle": {
+      "support": 299,
+      "base_recall": 0.7491638795986622,
+      "ce_recall": 0.7725752508361204,
+      "f2_recall": 0.7625418060200669,
+      "base_f1": 0.6871165644171779,
+      "ce_f1": 0.6844444444444444,
+      "f2_f1": 0.6940639269406392
+    },
+    "Cassava__Healthy": {
+      "support": 325,
+      "base_recall": 0.7661538461538462,
+      "ce_recall": 0.7353846153846154,
+      "f2_recall": 0.72,
+      "base_f1": 0.6596026490066225,
+      "ce_f1": 0.6620498614958449,
+      "f2_f1": 0.6437414030261348
+    },
+    "Cassava__Mosaic_Disease": {
+      "support": 1654,
+      "base_recall": 0.8282950423216445,
+      "ce_recall": 0.8536880290205562,
+      "f2_recall": 0.8555018137847642,
+      "base_f1": 0.8977719528178244,
+      "ce_f1": 0.9121447028423773,
+      "f2_f1": 0.9117268041237113
+    },
+    "Cherry__Healthy": {
+      "support": 342,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 0.9970845481049563,
+      "ce_f1": 0.9956331877729258,
+      "f2_f1": 0.9956331877729258
+    },
+    "Cherry__Powdery_Mildew": {
+      "support": 316,
+      "base_recall": 0.9778481012658228,
+      "ce_recall": 0.9936708860759493,
+      "f2_recall": 0.9841772151898734,
+      "base_f1": 0.9888,
+      "ce_f1": 0.9968253968253968,
+      "f2_f1": 0.9920255183413078
+    },
+    "Coffee__Healthy": {
+      "support": 118,
+      "base_recall": 0.9661016949152542,
+      "ce_recall": 0.9661016949152542,
+      "f2_recall": 0.9661016949152542,
+      "base_f1": 0.9539748953974896,
+      "ce_f1": 0.9421487603305785,
+      "f2_f1": 0.95
+    },
+    "Coffee__Red_Spider_Mite": {
+      "support": 23,
+      "base_recall": 0.6521739130434783,
+      "ce_recall": 0.782608695652174,
+      "f2_recall": 0.5652173913043478,
+      "base_f1": 0.6521739130434783,
+      "ce_f1": 0.6666666666666666,
+      "f2_f1": 0.5777777777777777
+    },
+    "Coffee__Rust": {
+      "support": 88,
+      "base_recall": 0.8295454545454546,
+      "ce_recall": 0.7386363636363636,
+      "f2_recall": 0.7840909090909091,
+      "base_f1": 0.8488372093023255,
+      "ce_f1": 0.8024691358024691,
+      "f2_f1": 0.8165680473372781
+    },
+    "Corn__Common_Rust": {
+      "support": 537,
+      "base_recall": 0.9981378026070763,
+      "ce_recall": 0.9981378026070763,
+      "f2_recall": 0.9720670391061452,
+      "base_f1": 0.9990680335507922,
+      "ce_f1": 0.9990680335507922,
+      "f2_f1": 0.9858356940509915
+    },
+    "Corn__Gray_Leaf_Spot": {
+      "support": 375,
+      "base_recall": 0.9893333333333333,
+      "ce_recall": 0.984,
+      "f2_recall": 0.984,
+      "base_f1": 0.9476372924648787,
+      "ce_f1": 0.9485861182519281,
+      "f2_f1": 0.9449423815620999
+    },
+    "Corn__Healthy": {
+      "support": 522,
+      "base_recall": 1.0,
+      "ce_recall": 0.9961685823754789,
+      "f2_recall": 0.9942528735632183,
+      "base_f1": 0.997134670487106,
+      "ce_f1": 0.9961685823754789,
+      "f2_f1": 0.9952061361457335
+    },
+    "Corn__Northern_Leaf_Blight": {
+      "support": 513,
+      "base_recall": 0.9278752436647173,
+      "ce_recall": 0.9376218323586745,
+      "f2_recall": 0.9415204678362573,
+      "base_f1": 0.9558232931726908,
+      "ce_f1": 0.961038961038961,
+      "f2_f1": 0.9479882237487733
+    },
+    "Grape__Black_Measles": {
+      "support": 353,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 1.0,
+      "f2_f1": 1.0
+    },
+    "Grape__Black_Rot": {
+      "support": 354,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 1.0,
+      "f2_f1": 1.0
+    },
+    "Grape__Healthy": {
+      "support": 318,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 1.0,
+      "f2_f1": 0.9984301412872841
+    },
+    "Grape__Leaf_Blight": {
+      "support": 322,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 1.0,
+      "f2_f1": 1.0
+    },
+    "Melon__Calcium_Deficiency": {
+      "support": 7,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 1.0,
+      "f2_f1": 1.0
+    },
+    "Melon__Healthy": {
+      "support": 6,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 0.9230769230769231,
+      "ce_f1": 1.0,
+      "f2_f1": 0.9230769230769231
+    },
+    "Melon__Nitrogen_Deficiency": {
+      "support": 10,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 1.0,
+      "f2_f1": 1.0
+    },
+    "Melon__Potassium_Deficiency": {
+      "support": 6,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 1.0,
+      "f2_f1": 1.0
+    },
+    "Pea__Downy_Mildew": {
+      "support": 52,
+      "base_recall": 0.9230769230769231,
+      "ce_recall": 0.9230769230769231,
+      "f2_recall": 0.9230769230769231,
+      "base_f1": 0.96,
+      "ce_f1": 0.96,
+      "f2_f1": 0.96
+    },
+    "Pea__Healthy": {
+      "support": 62,
+      "base_recall": 1.0,
+      "ce_recall": 0.9838709677419355,
+      "f2_recall": 0.967741935483871,
+      "base_f1": 0.9763779527559056,
+      "ce_f1": 0.9682539682539683,
+      "f2_f1": 0.96
+    },
+    "Pea__Leaf_Miner": {
+      "support": 46,
+      "base_recall": 0.9565217391304348,
+      "ce_recall": 0.9565217391304348,
+      "f2_recall": 0.9565217391304348,
+      "base_f1": 0.967032967032967,
+      "ce_f1": 0.967032967032967,
+      "f2_f1": 0.967032967032967
+    },
+    "Pea__Powdery_Mildew": {
+      "support": 46,
+      "base_recall": 0.9782608695652174,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 0.9574468085106383,
+      "ce_f1": 0.968421052631579,
+      "f2_f1": 0.9583333333333334
+    },
+    "Peach__Bacterial_Spot": {
+      "support": 345,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 0.9971098265895953,
+      "ce_f1": 0.9985528219971056,
+      "f2_f1": 0.9985528219971056
+    },
+    "Peach__Healthy": {
+      "support": 324,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 0.9969135802469136,
+      "base_f1": 0.9863013698630136,
+      "ce_f1": 0.9938650306748467,
+      "f2_f1": 0.9953775038520801
+    },
+    "Potato__Early_Blight": {
+      "support": 514,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 0.9799809342230696,
+      "ce_f1": 0.9961240310077519,
+      "f2_f1": 0.9932367149758454
+    },
+    "Potato__Healthy": {
+      "support": 365,
+      "base_recall": 0.9041095890410958,
+      "ce_recall": 0.9232876712328767,
+      "f2_recall": 0.9780821917808219,
+      "base_f1": 0.9482758620689655,
+      "ce_f1": 0.9573863636363636,
+      "f2_f1": 0.9861878453038674
+    },
+    "Potato__Late_Blight": {
+      "support": 517,
+      "base_recall": 0.9458413926499033,
+      "ce_recall": 0.9613152804642167,
+      "f2_recall": 0.9729206963249516,
+      "base_f1": 0.9721669980119284,
+      "ce_f1": 0.980276134122288,
+      "f2_f1": 0.9833822091886608
+    },
+    "Pumpkin__Bacterial_Leaf_Spot": {
+      "support": 60,
+      "base_recall": 0.8166666666666667,
+      "ce_recall": 0.7666666666666667,
+      "f2_recall": 0.75,
+      "base_f1": 0.8376068376068376,
+      "ce_f1": 0.8070175438596491,
+      "f2_f1": 0.7964601769911505
+    },
+    "Pumpkin__Downy_Mildew": {
+      "support": 60,
+      "base_recall": 0.8833333333333333,
+      "ce_recall": 0.8666666666666667,
+      "f2_recall": 0.7333333333333333,
+      "base_f1": 0.848,
+      "ce_f1": 0.8387096774193549,
+      "f2_f1": 0.7927927927927928
+    },
+    "Pumpkin__Healthy": {
+      "support": 60,
+      "base_recall": 0.9333333333333333,
+      "ce_recall": 0.9166666666666666,
+      "f2_recall": 0.95,
+      "base_f1": 0.9256198347107438,
+      "ce_f1": 0.8870967741935484,
+      "f2_f1": 0.890625
+    },
+    "Pumpkin__Mosaic_Disease": {
+      "support": 60,
+      "base_recall": 0.9,
+      "ce_recall": 0.9333333333333333,
+      "f2_recall": 0.9166666666666666,
+      "base_f1": 0.907563025210084,
+      "ce_f1": 0.9333333333333333,
+      "f2_f1": 0.873015873015873
+    },
+    "Pumpkin__Powdery_Mildew": {
+      "support": 60,
+      "base_recall": 0.7666666666666667,
+      "ce_recall": 0.7666666666666667,
+      "f2_recall": 0.8333333333333334,
+      "base_f1": 0.7863247863247863,
+      "ce_f1": 0.7796610169491526,
+      "f2_f1": 0.8130081300813008
+    },
+    "Rice__Bacterial_Blight": {
+      "support": 15,
+      "base_recall": 0.8666666666666667,
+      "ce_recall": 0.8666666666666667,
+      "f2_recall": 0.8,
+      "base_f1": 0.896551724137931,
+      "ce_f1": 0.896551724137931,
+      "f2_f1": 0.8571428571428571
+    },
+    "Rice__Brown_Spot": {
+      "support": 93,
+      "base_recall": 0.8602150537634409,
+      "ce_recall": 0.8387096774193549,
+      "f2_recall": 0.9032258064516129,
+      "base_f1": 0.837696335078534,
+      "ce_f1": 0.8210526315789474,
+      "f2_f1": 0.8115942028985508
+    },
+    "Rice__Healthy": {
+      "support": 223,
+      "base_recall": 0.9147982062780269,
+      "ce_recall": 0.9192825112107623,
+      "f2_recall": 0.8385650224215246,
+      "base_f1": 0.9086859688195991,
+      "ce_f1": 0.9111111111111111,
+      "f2_f1": 0.8697674418604651
+    },
+    "Rice__Leaf_Blast": {
+      "support": 146,
+      "base_recall": 0.815068493150685,
+      "ce_recall": 0.821917808219178,
+      "f2_recall": 0.8082191780821918,
+      "base_f1": 0.8321678321678322,
+      "ce_f1": 0.8391608391608392,
+      "f2_f1": 0.8166089965397924
+    },
+    "Rice__Neck_Blast": {
+      "support": 149,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 1.0,
+      "ce_f1": 0.9966555183946488,
+      "f2_f1": 1.0
+    },
+    "Strawberry__Healthy": {
+      "support": 342,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 1.0,
+      "base_f1": 0.9985401459854014,
+      "ce_f1": 0.9985401459854014,
+      "f2_f1": 0.9985401459854014
+    },
+    "Strawberry__Leaf_Scorch": {
+      "support": 332,
+      "base_recall": 0.9909638554216867,
+      "ce_recall": 0.9939759036144579,
+      "f2_recall": 0.9939759036144579,
+      "base_f1": 0.9954614220877458,
+      "ce_f1": 0.9969788519637462,
+      "f2_f1": 0.9969788519637462
+    },
+    "Sugarcane__Red_Rot": {
+      "support": 15,
+      "base_recall": 0.9333333333333333,
+      "ce_recall": 1.0,
+      "f2_recall": 0.9333333333333333,
+      "base_f1": 0.9032258064516129,
+      "ce_f1": 0.9375,
+      "f2_f1": 0.875
+    },
+    "Tomato__Bacterial_Spot": {
+      "support": 319,
+      "base_recall": 0.9937304075235109,
+      "ce_recall": 0.9937304075235109,
+      "f2_recall": 0.9937304075235109,
+      "base_f1": 0.9829457364341085,
+      "ce_f1": 0.9783950617283951,
+      "f2_f1": 0.9709035222052067
+    },
+    "Tomato__Early_Blight": {
+      "support": 360,
+      "base_recall": 0.9888888888888889,
+      "ce_recall": 0.9833333333333333,
+      "f2_recall": 0.9666666666666667,
+      "base_f1": 0.9847856154910097,
+      "ce_f1": 0.979253112033195,
+      "f2_f1": 0.9666666666666667
+    },
+    "Tomato__Healthy": {
+      "support": 361,
+      "base_recall": 1.0,
+      "ce_recall": 1.0,
+      "f2_recall": 0.997229916897507,
+      "base_f1": 0.9931224209078404,
+      "ce_f1": 0.9972375690607734,
+      "f2_f1": 0.9849521203830369
+    },
+    "Tomato__Late_Blight": {
+      "support": 347,
+      "base_recall": 0.9769452449567724,
+      "ce_recall": 0.9798270893371758,
+      "f2_recall": 0.9250720461095101,
+      "base_f1": 0.9783549783549783,
+      "ce_f1": 0.9770114942528736,
+      "f2_f1": 0.9610778443113772
+    },
+    "Tomato__Septoria_Leaf_Spot": {
+      "support": 327,
+      "base_recall": 0.9877675840978594,
+      "ce_recall": 0.9724770642201835,
+      "f2_recall": 0.9938837920489296,
+      "base_f1": 0.9923195084485407,
+      "ce_f1": 0.9845201238390093,
+      "f2_f1": 0.989345509893455
+    },
+    "Tomato__Yellow_Leaf_Curl_Virus": {
+      "support": 368,
+      "base_recall": 0.9836956521739131,
+      "ce_recall": 0.9836956521739131,
+      "f2_recall": 0.9755434782608695,
+      "base_f1": 0.9917808219178083,
+      "ce_f1": 0.9917808219178083,
+      "f2_f1": 0.9876203576341128
+    },
+    "Wheat__Brown_Rust": {
+      "support": 304,
+      "base_recall": 0.9802631578947368,
+      "ce_recall": 0.993421052631579,
+      "f2_recall": 0.9736842105263158,
+      "base_f1": 0.9770491803278688,
+      "ce_f1": 0.9821138211382113,
+      "f2_f1": 0.9720853858784894
+    },
+    "Wheat__Healthy": {
+      "support": 381,
+      "base_recall": 0.989501312335958,
+      "ce_recall": 0.989501312335958,
+      "f2_recall": 0.979002624671916,
+      "base_f1": 0.9908015768725361,
+      "ce_f1": 0.9934123847167325,
+      "f2_f1": 0.9867724867724867
+    },
+    "Wheat__Yellow_Rust": {
+      "support": 302,
+      "base_recall": 0.9900662251655629,
+      "ce_recall": 0.9867549668874173,
+      "f2_recall": 0.9768211920529801,
+      "base_f1": 0.9950083194675541,
+      "ce_f1": 0.9933333333333333,
+      "f2_f1": 0.9882747068676717
+    }
+  },
+  "scope": "One-seed ResNet50 mechanism screen on prospective group-disjoint split; not a three-backbone ensemble result."
+}

@@ -1,0 +1,365 @@
+{
+  "seed": 42,
+  "source_root": "/workspace/datasets/cropquery_sources",
+  "mapped_images": 132955,
+  "unique_groups": 112429,
+  "class_count": 64,
+  "split_counts": {
+    "train": 106332,
+    "val": 6635,
+    "test": 19923,
+    "exclude_conflicting_labels": 65
+  },
+  "per_class_split_counts": {
+    "Apple__Apple_Scab": {
+      "test": 378,
+      "train": 2016,
+      "val": 126
+    },
+    "Apple__Black_Rot": {
+      "test": 373,
+      "train": 1987,
+      "val": 124
+    },
+    "Apple__Cedar_Apple_Rust": {
+      "train": 1760,
+      "val": 110,
+      "test": 330
+    },
+    "Apple__Healthy": {
+      "train": 2008,
+      "test": 377,
+      "val": 125
+    },
+    "Bell_Pepper__Bacterial_Spot": {
+      "train": 1912,
+      "val": 120,
+      "test": 359
+    },
+    "Bell_Pepper__Healthy": {
+      "train": 1988,
+      "test": 373,
+      "val": 124
+    },
+    "Cashew__Anthracnose": {
+      "train": 3950,
+      "val": 248,
+      "test": 742
+    },
+    "Cashew__Gummosis": {
+      "train": 1707,
+      "test": 330,
+      "val": 102
+    },
+    "Cashew__Healthy": {
+      "train": 5778,
+      "val": 353,
+      "test": 1082
+    },
+    "Cashew__Leaf_Miner": {
+      "train": 3964,
+      "test": 745,
+      "val": 244
+    },
+    "Cashew__Red_Rust": {
+      "train": 5263,
+      "test": 978,
+      "val": 325
+    },
+    "Cassava__Bacterial_Blight": {
+      "train": 737,
+      "test": 138,
+      "val": 46
+    },
+    "Cassava__Brown_Streak_Disease": {
+      "test": 275,
+      "train": 1464,
+      "val": 92
+    },
+    "Cassava__Green_Mottle": {
+      "train": 1594,
+      "test": 299,
+      "val": 100
+    },
+    "Cassava__Healthy": {
+      "train": 1733,
+      "test": 325,
+      "val": 108
+    },
+    "Cassava__Mosaic_Disease": {
+      "train": 8822,
+      "test": 1654,
+      "val": 551
+    },
+    "Cherry__Healthy": {
+      "train": 1826,
+      "test": 342,
+      "val": 114
+    },
+    "Cherry__Powdery_Mildew": {
+      "train": 1682,
+      "test": 316,
+      "val": 106
+    },
+    "Coffee__Healthy": {
+      "train": 633,
+      "test": 118,
+      "val": 39,
+      "exclude_conflicting_labels": 1
+    },
+    "Coffee__Red_Spider_Mite": {
+      "test": 23,
+      "train": 124,
+      "exclude_conflicting_labels": 12,
+      "val": 8
+    },
+    "Coffee__Rust": {
+      "train": 474,
+      "test": 88,
+      "exclude_conflicting_labels": 11,
+      "val": 29
+    },
+    "Corn__Common_Rust": {
+      "train": 2859,
+      "test": 537,
+      "val": 180
+    },
+    "Corn__Gray_Leaf_Spot": {
+      "train": 2066,
+      "val": 124,
+      "test": 375
+    },
+    "Corn__Healthy": {
+      "train": 2787,
+      "val": 177,
+      "test": 522
+    },
+    "Corn__Northern_Leaf_Blight": {
+      "train": 2691,
+      "val": 166,
+      "test": 513
+    },
+    "Grape__Black_Measles": {
+      "train": 1922,
+      "test": 353,
+      "val": 125
+    },
+    "Grape__Black_Rot": {
+      "train": 1888,
+      "val": 118,
+      "test": 354
+    },
+    "Grape__Healthy": {
+      "train": 1691,
+      "test": 318,
+      "val": 106
+    },
+    "Grape__Leaf_Blight": {
+      "train": 1722,
+      "test": 322,
+      "val": 108
+    },
+    "Melon__Calcium_Deficiency": {
+      "train": 35,
+      "val": 8,
+      "test": 7
+    },
+    "Melon__Healthy": {
+      "train": 41,
+      "test": 6,
+      "val": 3
+    },
+    "Melon__Nitrogen_Deficiency": {
+      "test": 10,
+      "train": 31,
+      "val": 9
+    },
+    "Melon__Potassium_Deficiency": {
+      "train": 39,
+      "val": 5,
+      "test": 6
+    },
+    "Pea__Downy_Mildew": {
+      "train": 285,
+      "test": 52,
+      "exclude_conflicting_labels": 12,
+      "val": 17
+    },
+    "Pea__Healthy": {
+      "train": 328,
+      "test": 62,
+      "val": 21
+    },
+    "Pea__Leaf_Miner": {
+      "train": 266,
+      "exclude_conflicting_labels": 22,
+      "test": 46,
+      "val": 14
+    },
+    "Pea__Powdery_Mildew": {
+      "exclude_conflicting_labels": 1,
+      "val": 15,
+      "train": 245,
+      "test": 46
+    },
+    "Peach__Bacterial_Spot": {
+      "train": 1837,
+      "val": 115,
+      "test": 345
+    },
+    "Peach__Healthy": {
+      "train": 1728,
+      "test": 324,
+      "val": 108
+    },
+    "Potato__Early_Blight": {
+      "train": 2746,
+      "test": 514,
+      "val": 164
+    },
+    "Potato__Healthy": {
+      "train": 1946,
+      "test": 365,
+      "val": 121
+    },
+    "Potato__Late_Blight": {
+      "train": 2737,
+      "val": 170,
+      "test": 517
+    },
+    "Pumpkin__Bacterial_Leaf_Spot": {
+      "train": 320,
+      "val": 20,
+      "test": 60
+    },
+    "Pumpkin__Downy_Mildew": {
+      "test": 60,
+      "val": 20,
+      "train": 319,
+      "exclude_conflicting_labels": 1
+    },
+    "Pumpkin__Healthy": {
+      "test": 60,
+      "train": 320,
+      "val": 20
+    },
+    "Pumpkin__Mosaic_Disease": {
+      "train": 319,
+      "val": 20,
+      "test": 60,
+      "exclude_conflicting_labels": 1
+    },
+    "Pumpkin__Powdery_Mildew": {
+      "val": 20,
+      "train": 320,
+      "test": 60
+    },
+    "Rice__Bacterial_Blight": {
+      "train": 80,
+      "val": 5,
+      "test": 15
+    },
+    "Rice__Brown_Spot": {
+      "train": 488,
+      "test": 93,
+      "val": 30,
+      "exclude_conflicting_labels": 2
+    },
+    "Rice__Healthy": {
+      "test": 223,
+      "train": 1189,
+      "val": 74,
+      "exclude_conflicting_labels": 2
+    },
+    "Rice__Leaf_Blast": {
+      "test": 146,
+      "train": 782,
+      "val": 49
+    },
+    "Rice__Neck_Blast": {
+      "train": 801,
+      "test": 149,
+      "val": 50
+    },
+    "Strawberry__Healthy": {
+      "train": 1824,
+      "val": 114,
+      "test": 342
+    },
+    "Strawberry__Leaf_Scorch": {
+      "train": 1776,
+      "test": 332,
+      "val": 110
+    },
+    "Sugarcane__Red_Rot": {
+      "train": 80,
+      "test": 15,
+      "val": 5
+    },
+    "Tomato__Bacterial_Spot": {
+      "train": 1702,
+      "test": 319,
+      "val": 106
+    },
+    "Tomato__Early_Blight": {
+      "train": 1920,
+      "test": 360,
+      "val": 120
+    },
+    "Tomato__Healthy": {
+      "train": 1926,
+      "test": 361,
+      "val": 120
+    },
+    "Tomato__Late_Blight": {
+      "train": 1848,
+      "val": 119,
+      "test": 347
+    },
+    "Tomato__Septoria_Leaf_Spot": {
+      "test": 327,
+      "train": 1745,
+      "val": 109
+    },
+    "Tomato__Yellow_Leaf_Curl_Virus": {
+      "train": 1960,
+      "test": 368,
+      "val": 123
+    },
+    "Wheat__Brown_Rust": {
+      "train": 1624,
+      "val": 102,
+      "test": 304
+    },
+    "Wheat__Healthy": {
+      "train": 2007,
+      "test": 381,
+      "val": 123
+    },
+    "Wheat__Yellow_Rust": {
+      "train": 1670,
+      "val": 108,
+      "test": 302
+    }
+  },
+  "largest_group_images": 14,
+  "source_counts": {
+    "ayushbpanchal": 25811,
+    "binnassor89": 200,
+    "mexwell": 17938,
+    "nirmalsankalana": 1560,
+    "shubham2703": 13224,
+    "tahmidmir": 2000,
+    "tushar5harma": 67111,
+    "yasaminborhani": 3679,
+    "zunorain": 1432
+  },
+  "skipped_unmapped_or_invalid": {
+    "shubham2703": 100,
+    "tushar5harma": 7
+  },
+  "excluded_conflicting_labels": 65,
+  "class_groups_below_three": [],
+  "manifest_sha256": "97414fc5d2fac35463eadc88b88473073a35ac22b31d1f82eb595a36fd8e7ee0",
+  "limitation": "Exact and 64-bit image hashes plus filename families do not find all near duplicates or plant-level repeats."
+}

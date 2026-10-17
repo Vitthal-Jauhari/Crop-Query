@@ -1,0 +1,140 @@
+{
+  "created_utc": "2026-10-14T19:57:01.703152+00:00",
+  "image_sources": [
+    {
+      "slug": "ayushbpanchal/cashew-image-dataset",
+      "version": 1,
+      "reported_bytes": 1809280731,
+      "retrieved_utc": "2026-10-14T19:45:42.414783+00:00",
+      "archive": "cashew-image-dataset.zip",
+      "archive_sha256": "0075f82e46ac0ac7e266818f2a897d8b136a9aacae5065a4feebf17718e3ee9e",
+      "extracted_files": 25811,
+      "extracted_utc": "2026-10-14T19:48:01.303893+00:00"
+    },
+    {
+      "slug": "binnassor89/melon-macronutrient-deficiency-dataset",
+      "version": 1,
+      "reported_bytes": 52077643,
+      "retrieved_utc": "2026-10-14T19:42:16.510435+00:00",
+      "archive": "melon-macronutrient-deficiency-dataset.zip",
+      "archive_sha256": "b4aec53506fbce3719e55cd3e9005851239f699ead8927e5506e94fd72453fd2",
+      "extracted_files": 200,
+      "extracted_utc": "2026-10-14T19:42:25.938174+00:00"
+    },
+    {
+      "slug": "mexwell/crop-diseases-classification",
+      "version": 1,
+      "reported_bytes": 2145247407,
+      "retrieved_utc": "2026-10-14T19:48:01.727863+00:00",
+      "archive": "crop-diseases-classification.zip",
+      "archive_sha256": "57b7d10233688ae6b5fe55257026d56e0d003022e7cdcbd130e5bc2380ccf366",
+      "extracted_files": 17940,
+      "extracted_utc": "2026-10-14T19:50:30.990921+00:00"
+    },
+    {
+      "slug": "nirmalsankalana/rocole-a-robusta-coffee-leaf-images-dataset",
+      "version": 1,
+      "reported_bytes": 406614464,
+      "retrieved_utc": "2026-10-14T19:42:51.692704+00:00",
+      "archive": "rocole-a-robusta-coffee-leaf-images-dataset.zip",
+      "archive_sha256": "16638a4488f3f910ad702bc991d6dade5539f5100e7ae66a7140e614c4c9a6f5",
+      "extracted_files": 1560,
+      "extracted_utc": "2026-10-14T19:43:25.249846+00:00"
+    },
+    {
+      "slug": "shubham2703/five-crop-diseases-dataset",
+      "version": 1,
+      "reported_bytes": 4786863224,
+      "retrieved_utc": "2026-10-14T19:50:31.382867+00:00",
+      "archive": "five-crop-diseases-dataset.zip",
+      "archive_sha256": "1e19509b8addc9a16607c31cd7dc02a68e6b6a4268190acf3a19c3f0addcf22d",
+      "extracted_files": 13325,
+      "extracted_utc": "2026-10-14T19:56:01.710251+00:00"
+    },
+    {
+      "slug": "tahmidmir/pumpkin-leaf-diseases-dataset-from-bangladesh",
+      "version": 1,
+      "reported_bytes": 282235071,
+      "retrieved_utc": "2026-10-14T19:42:26.333676+00:00",
+      "archive": "pumpkin-leaf-diseases-dataset-from-bangladesh.zip",
+      "archive_sha256": "66b073e9f2ae1f83a82d15ccb896c6bdf467b2e58a7cbfe982319ec51593b112",
+      "extracted_files": 2000,
+      "extracted_utc": "2026-10-14T19:42:51.310365+00:00"
+    },
+    {
+      "slug": "tushar5harma/plant-village-dataset-updated",
+      "version": 2,
+      "reported_bytes": 1070419961,
+      "retrieved_utc": "2026-10-14T19:44:06.919033+00:00",
+      "archive": "plant-village-dataset-updated.zip",
+      "archive_sha256": "d74b85f7ace818f28a1dcce360a97e0830166deb6bae5a7522bdb7da507245ff",
+      "extracted_files": 67118,
+      "extracted_utc": "2026-10-14T19:45:42.014258+00:00"
+    },
+    {
+      "slug": "yasaminborhani/wheatrustclassificationdataset",
+      "version": 1,
+      "reported_bytes": 508996393,
+      "retrieved_utc": "2026-10-14T19:43:25.647142+00:00",
+      "archive": "wheatrustclassificationdataset.zip",
+      "archive_sha256": "bdf9620b0b6c3dddae6d4fcea98cf9d4183e83af830f8840b4126ddb8fecd92b",
+      "extracted_files": 3679,
+      "extracted_utc": "2026-10-14T19:44:06.547022+00:00"
+    },
+    {
+      "slug": "zunorain/pea-plant-dataset",
+      "version": 1,
+      "reported_bytes": 17595130,
+      "retrieved_utc": "2026-10-14T19:42:09.650691+00:00",
+      "archive": "pea-plant-dataset.zip",
+      "archive_sha256": "3daef857179d709108ad6b3039008e880f90babf7b8fc90802bb1a23cc0650cf",
+      "extracted_files": 1432,
+      "extracted_utc": "2026-10-14T19:42:16.032766+00:00"
+    }
+  ],
+  "image_source_scope": "Student-supplied public Kaggle slugs, current pinned download versions; historical training versions not proven.",
+  "kisan_audit": {
+    "dataset": "Franklin01/Dataset_prep01",
+    "revision": "57535f94e2feebe7bb1b320edbc4b2d5cf3406bb",
+    "parquet_sha256": "595e3325930685757364ce42f22c9dec3644d9482ce8e878d0e7817c2c4ec0c7",
+    "raw_rows": 178939,
+    "loader_retained_qa": 178815,
+    "loader_skipped": 124,
+    "embedded_v2_crop_entries": 39,
+    "expected_two_source_documents": 178854,
+    "scope": "Count reconstruction from current pinned inputs; not a verification of every historical Chroma record or agronomic quality."
+  },
+  "class_names_sha256": "354faf51c0de33da8a2dbb003ba510a641923b3f4150456ad25b0ca413a03710",
+  "local_checkpoints": [
+    {
+      "name": "phase1_best.pth",
+      "size_bytes": 94596493,
+      "sha256": "395a7bb1e3945c3ee3372dba050d1dc6790ba7de6a75b1f24076a5df52a74975",
+      "provenance": "Local earlier-phase file; not a verified final Phase D/F2 ensemble member."
+    },
+    {
+      "name": "phase2_best.pth",
+      "size_bytes": 272509485,
+      "sha256": "fab00822afad8eef5b743291046bc445d7cbc8d2ffecb48699507a9599a19be3",
+      "provenance": "Local earlier-phase file; not a verified final Phase D/F2 ensemble member."
+    },
+    {
+      "name": "phase3_best.pth",
+      "size_bytes": 284130909,
+      "sha256": "5ed628e44a440ce3f1d13cd56b9a83beb9b0d646bb6a4f327ab631ccfc070e9c",
+      "provenance": "Local earlier-phase file; not a verified final Phase D/F2 ensemble member."
+    },
+    {
+      "name": "phase3_final.pth",
+      "size_bytes": 284135827,
+      "sha256": "cd66a23d7c9c5f77b450983eee04595eb445ce727017de9d655a123105d45cc8",
+      "provenance": "Local earlier-phase file; not a verified final Phase D/F2 ensemble member."
+    }
+  ],
+  "missing_original_artifacts": [
+    "final three-backbone Phase D weights",
+    "final three-backbone F2 weights",
+    "checkpoint-specific historical training manifest",
+    "FAISS image-membership manifest"
+  ]
+}

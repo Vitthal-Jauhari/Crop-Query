@@ -1,0 +1,108 @@
+{
+  "source": "notebooks/cropquery-v2.ipynb",
+  "cell_index": 30,
+  "n_scenarios": 19,
+  "retrieved_mean_recomputed": 0.9473684210526315,
+  "generated_mean_recomputed": 0.7631578947368421,
+  "retrieved_minus_generated": 0.18421052631578938,
+  "complete_losses_after_generation": 3,
+  "partial_losses_after_generation": 1,
+  "design": "Stored notebook output; blank image, diagnosis supplied, keywords derived from indexed entry; no independent agronomic reference.",
+  "rows": [
+    {
+      "scenario": "Tomato / Late Blight",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Tomato / Early Blight",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Potato / Late Blight",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 0.0
+    },
+    {
+      "scenario": "Wheat / Leaf Rust",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Rice / Leaf Blast",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Grape / Black Rot",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Cashew / Anthracnose",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Pumpkin / Downy Mildew",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Tomato / Spider Mites Two-spotted",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 0.0
+    },
+    {
+      "scenario": "Strawberry / Leaf Scorch",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Apple / Cedar Apple Rust",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Soybean / Frogeye Leaf Spot",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Cashew / Leaf Miner",
+      "retrieved_term_recall": 0.0,
+      "generated_term_recall": 0.0
+    },
+    {
+      "scenario": "Banana / Sigatoka",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 0.0
+    },
+    {
+      "scenario": "Mango / Anthracnose",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Mango / Powdery Mildew",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Groundnut / Early Leaf Spot",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Citrus / Canker",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 1.0
+    },
+    {
+      "scenario": "Barley / Powdery Mildew",
+      "retrieved_term_recall": 1.0,
+      "generated_term_recall": 0.5
+    }
+  ]
+}

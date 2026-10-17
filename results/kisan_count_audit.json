@@ -1,0 +1,11 @@
+{
+  "dataset": "Franklin01/Dataset_prep01",
+  "revision": "57535f94e2feebe7bb1b320edbc4b2d5cf3406bb",
+  "parquet_sha256": "595e3325930685757364ce42f22c9dec3644d9482ce8e878d0e7817c2c4ec0c7",
+  "raw_rows": 178939,
+  "loader_retained_qa": 178815,
+  "loader_skipped": 124,
+  "embedded_v2_crop_entries": 39,
+  "expected_two_source_documents": 178854,
+  "scope": "Count reconstruction from current pinned inputs; not a verification of every historical Chroma record or agronomic quality."
+}
