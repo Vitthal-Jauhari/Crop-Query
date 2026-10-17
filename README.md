@@ -45,6 +45,5 @@ The split manifest SHA-256 is `97414fc5d2fac35463eadc88b88473073a35ac22b31d1f82e
 - No independently adjudicated real-image, image-to-advice cases or translated-output assessment are complete.
 - The prospective accuracy estimate covers the nine-source internal mixture and one ResNet50 seed; it does not establish field performance or ensemble accuracy.
 - The current FAISS override is disabled, and the warning heuristic is not a verified treatment-safety system.
-- Manuscript files are intentionally excluded from this branch.
 
 CropQuery was developed under the PRISM AI Mentorship Program. Its public inputs are the nine [catalogued image datasets](results/source_inventory_v1.json) and the [Kisan Call Centre dataset](https://huggingface.co/datasets/Franklin01/Dataset_prep01).
